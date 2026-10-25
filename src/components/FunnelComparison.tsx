@@ -3,32 +3,21 @@ import {
   GitCompare,
   Sparkles,
 } from 'lucide-react';
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  CartesianGrid,
-} from 'recharts';
 import { FunnelConfig, FunnelResult, RawEvent } from '../types/funnel';
 import { calculateFunnel } from '../engine/funnelEngine';
 import { compareFunnels } from '../engine/comparator';
 import { formatDuration, formatPercentage } from '../utils/time';
+import { EChartsFunnelComparison } from './echarts/EChartsFunnelComparison';
 
 interface FunnelComparisonProps {
   currentFunnel: FunnelResult;
   allEvents: RawEvent[];
-  availableProperties: string[];
 }
 
 export const FunnelComparison: React.FC<FunnelComparisonProps> = ({
   currentFunnel,
   allEvents,
 }) => {
-  // Preset comparison variants
   const [comparisonType, setComparisonType] = useState<
     'window_variant' | 'device_variant' | 'dedup_variant'
   >('window_variant');
@@ -38,7 +27,6 @@ export const FunnelComparison: React.FC<FunnelComparisonProps> = ({
     const base = { ...currentFunnel.config };
 
     if (comparisonType === 'window_variant') {
-      // Compare 24h vs 7d (or 2h vs 24h)
       const currentVal = base.conversionWindow.value;
       const isHours = base.conversionWindow.unit === 'hours';
       const newVal = isHours && currentVal <= 24 ? 7 : 24;
@@ -47,7 +35,7 @@ export const FunnelComparison: React.FC<FunnelComparisonProps> = ({
       return {
         ...base,
         id: 'funnel-b-window',
-        name: `${base.name} (時間窗：${newVal} ${newUnit === 'days' ? '天' : '小時'})`,
+        name: `${base.name} (${newVal} ${newUnit === 'days' ? '天' : '小時'}窗口)`,
         conversionWindow: {
           ...base.conversionWindow,
           value: newVal,
@@ -55,7 +43,6 @@ export const FunnelComparison: React.FC<FunnelComparisonProps> = ({
         },
       };
     } else if (comparisonType === 'device_variant') {
-      // Filter by Desktop vs All or Mobile vs All
       return {
         ...base,
         id: 'funnel-b-device',
@@ -66,7 +53,6 @@ export const FunnelComparison: React.FC<FunnelComparisonProps> = ({
         ],
       };
     } else {
-      // Last touch vs First touch
       return {
         ...base,
         id: 'funnel-b-dedup',
@@ -84,25 +70,18 @@ export const FunnelComparison: React.FC<FunnelComparisonProps> = ({
     return compareFunnels(currentFunnel, funnelB);
   }, [currentFunnel, funnelB]);
 
-  // Chart data
-  const chartData = comparison.diffs.map((d) => ({
-    name: d.stepName,
-    [currentFunnel.funnelName]: Number((d.funnelAConversionRate * 100).toFixed(1)),
-    [funnelB.funnelName]: Number((d.funnelBConversionRate * 100).toFixed(1)),
-  }));
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Selector of Comparison Modes */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
           <div>
-            <h2 className="text-base font-bold text-slate-100 flex items-center space-x-2 m-0">
-              <GitCompare className="w-4 h-4 text-indigo-400" />
+            <h2 className="text-xs font-bold uppercase tracking-wide text-slate-100 flex items-center space-x-2 m-0">
+              <GitCompare className="w-3.5 h-3.5 text-indigo-400" />
               <span>多漏斗平行對比 (Funnel Comparison)</span>
             </h2>
             <p className="text-xs text-slate-400 m-0">
-              對比不同時間窗、不同客群篩選條件或去重規則下的轉換表現與流失差異
+              對比不同時間窗、客群篩選條件或去重規則下的轉換表現與流失差異
             </p>
           </div>
 
@@ -121,36 +100,36 @@ export const FunnelComparison: React.FC<FunnelComparisonProps> = ({
         </div>
 
         {/* Funnel A vs Funnel B Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           {/* Funnel A Card */}
-          <div className="bg-slate-950/70 border border-indigo-500/30 rounded-xl p-4 space-y-2">
+          <div className="bg-slate-950/70 border border-indigo-500/30 rounded-xl p-3.5 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-400">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">
                 基準漏斗 A
               </span>
               <span className="text-[11px] text-slate-400">
                 窗口: {currentFunnel.config.conversionWindow.value} {currentFunnel.config.conversionWindow.unit}
               </span>
             </div>
-            <h3 className="text-sm font-bold text-slate-100 truncate m-0">
+            <h3 className="text-xs font-bold text-slate-100 truncate m-0">
               {currentFunnel.funnelName}
             </h3>
             <div className="flex items-baseline space-x-3 pt-1">
               <div>
                 <span className="text-[11px] text-slate-400 block">總轉換率</span>
-                <span className="text-lg font-bold text-indigo-300 font-mono">
+                <span className="text-base font-bold text-indigo-300 font-mono">
                   {formatPercentage(currentFunnel.overallConversionRate)}
                 </span>
               </div>
               <div>
                 <span className="text-[11px] text-slate-400 block">完成人數</span>
-                <span className="text-sm font-semibold text-slate-200 font-mono">
+                <span className="text-xs font-semibold text-slate-200 font-mono">
                   {currentFunnel.totalCompletedUsers} 人
                 </span>
               </div>
               <div>
                 <span className="text-[11px] text-slate-400 block">中位耗時</span>
-                <span className="text-sm font-semibold text-slate-300 font-mono">
+                <span className="text-xs font-semibold text-slate-300 font-mono">
                   {formatDuration(currentFunnel.overallTimeMetrics?.medianMs)}
                 </span>
               </div>
@@ -158,34 +137,34 @@ export const FunnelComparison: React.FC<FunnelComparisonProps> = ({
           </div>
 
           {/* Funnel B Card */}
-          <div className="bg-slate-950/70 border border-cyan-500/30 rounded-xl p-4 space-y-2">
+          <div className="bg-slate-950/70 border border-cyan-500/30 rounded-xl p-3.5 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-cyan-400">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400">
                 對比漏斗 B
               </span>
               <span className="text-[11px] text-slate-400">
                 窗口: {funnelB.config.conversionWindow.value} {funnelB.config.conversionWindow.unit}
               </span>
             </div>
-            <h3 className="text-sm font-bold text-slate-100 truncate m-0">
+            <h3 className="text-xs font-bold text-slate-100 truncate m-0">
               {funnelB.funnelName}
             </h3>
             <div className="flex items-baseline space-x-3 pt-1">
               <div>
                 <span className="text-[11px] text-slate-400 block">總轉換率</span>
-                <span className="text-lg font-bold text-cyan-300 font-mono">
+                <span className="text-base font-bold text-cyan-300 font-mono">
                   {formatPercentage(funnelB.overallConversionRate)}
                 </span>
               </div>
               <div>
                 <span className="text-[11px] text-slate-400 block">完成人數</span>
-                <span className="text-sm font-semibold text-slate-200 font-mono">
+                <span className="text-xs font-semibold text-slate-200 font-mono">
                   {funnelB.totalCompletedUsers} 人
                 </span>
               </div>
               <div>
                 <span className="text-[11px] text-slate-400 block">中位耗時</span>
-                <span className="text-sm font-semibold text-slate-300 font-mono">
+                <span className="text-xs font-semibold text-slate-300 font-mono">
                   {formatDuration(funnelB.overallTimeMetrics?.medianMs)}
                 </span>
               </div>
@@ -194,84 +173,40 @@ export const FunnelComparison: React.FC<FunnelComparisonProps> = ({
         </div>
 
         {/* Natural Language Comparative Insight */}
-        <div className="bg-indigo-950/20 border border-indigo-500/20 rounded-xl p-3.5 flex items-start space-x-2.5">
+        <div className="bg-slate-950 border border-slate-800 rounded-lg p-3 flex items-start space-x-2">
           <Sparkles className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
-          <p className="text-xs text-indigo-200/90 leading-relaxed m-0">
+          <p className="text-xs text-slate-300 leading-relaxed m-0">
             {comparison.summaryNote}
           </p>
         </div>
       </div>
 
-      {/* Comparison Chart */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+      {/* Comparison Chart via ECharts */}
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
         <div className="pb-2 border-b border-slate-800">
-          <h3 className="text-sm font-bold text-slate-100 m-0">
-            步驟轉換率對比 (Funnel A vs Funnel B)
+          <h3 className="text-xs font-bold uppercase tracking-wide text-slate-100 m-0">
+            步驟轉換率平行對比 (ECharts Bars)
           </h3>
-          <p className="text-xs text-slate-400 m-0">各步驟相對於起點的總體轉換留存率對照</p>
+          <p className="text-xs text-slate-400 m-0">各步驟相對於起點的總體留存率對照 (%)</p>
         </div>
 
-        <div className="h-64 w-full pt-2">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-              <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} />
-              <YAxis
-                stroke="#64748b"
-                fontSize={11}
-                tickLine={false}
-                unit="%"
-                domain={[0, 100]}
-              />
-              <Tooltip
-                content={({ active, payload, label }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div className="bg-slate-950 border border-slate-700 p-2.5 rounded-xl shadow-xl text-xs space-y-1">
-                        <p className="font-semibold text-slate-100 m-0">{label}</p>
-                        {payload.map((entry, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between space-x-3 text-[11px]"
-                          >
-                            <span style={{ color: entry.color }}>{entry.name}:</span>
-                            <span className="font-mono font-semibold text-slate-200">
-                              {entry.value}%
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-              <Bar
-                dataKey={currentFunnel.funnelName}
-                fill="#6366f1"
-                radius={[4, 4, 0, 0]}
-              />
-              <Bar dataKey={funnelB.funnelName} fill="#06b6d4" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <EChartsFunnelComparison comparison={comparison} />
       </div>
 
       {/* Side-by-side Diffs Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
-        <h3 className="text-sm font-bold text-slate-100 m-0">步驟指標差異詳表</h3>
-        <div className="overflow-x-auto rounded-xl border border-slate-800">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-3">
+        <h3 className="text-xs font-bold uppercase tracking-wide text-slate-100 m-0">步驟指標差異詳表</h3>
+        <div className="overflow-x-auto rounded-lg border border-slate-800">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950 text-slate-400 border-b border-slate-800">
+            <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 font-medium">
               <tr>
-                <th className="px-4 py-3">步驟名稱</th>
-                <th className="px-4 py-3">漏斗 A 人數</th>
-                <th className="px-4 py-3">漏斗 B 人數</th>
-                <th className="px-4 py-3">人數差異 (B - A)</th>
-                <th className="px-4 py-3">漏斗 A 轉換率</th>
-                <th className="px-4 py-3">漏斗 B 轉換率</th>
-                <th className="px-4 py-3">轉換率差值 (Δ)</th>
+                <th className="px-4 py-2.5">步驟名稱</th>
+                <th className="px-4 py-2.5">漏斗 A 人數</th>
+                <th className="px-4 py-2.5">漏斗 B 人數</th>
+                <th className="px-4 py-2.5">人數差異 (B - A)</th>
+                <th className="px-4 py-2.5">漏斗 A 轉換率</th>
+                <th className="px-4 py-2.5">漏斗 B 轉換率</th>
+                <th className="px-4 py-2.5">轉換率差值 (Δ)</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-850">
@@ -279,16 +214,16 @@ export const FunnelComparison: React.FC<FunnelComparisonProps> = ({
                 const isPosRate = diff.conversionRateDelta >= 0;
                 return (
                   <tr key={diff.stepIndex} className="hover:bg-slate-950/40">
-                    <td className="px-4 py-3 font-semibold text-slate-200">
+                    <td className="px-4 py-2.5 font-semibold text-slate-200">
                       {diff.stepName}
                     </td>
-                    <td className="px-4 py-3 text-slate-300 font-mono">
+                    <td className="px-4 py-2.5 text-slate-300 font-mono">
                       {diff.funnelAUserCount.toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 text-slate-300 font-mono">
+                    <td className="px-4 py-2.5 text-slate-300 font-mono">
                       {diff.funnelBUserCount.toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 font-mono">
+                    <td className="px-4 py-2.5 font-mono">
                       <span
                         className={
                           diff.userCountDelta >= 0 ? 'text-emerald-400' : 'text-rose-400'
@@ -298,15 +233,15 @@ export const FunnelComparison: React.FC<FunnelComparisonProps> = ({
                         {diff.userCountDelta}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-300 font-mono">
+                    <td className="px-4 py-2.5 text-slate-300 font-mono">
                       {formatPercentage(diff.funnelAConversionRate)}
                     </td>
-                    <td className="px-4 py-3 text-slate-300 font-mono">
+                    <td className="px-4 py-2.5 text-slate-300 font-mono">
                       {formatPercentage(diff.funnelBConversionRate)}
                     </td>
-                    <td className="px-4 py-3 font-mono">
+                    <td className="px-4 py-2.5 font-mono">
                       <span
-                        className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
+                        className={`px-1.5 py-0.5 rounded text-[11px] font-semibold ${
                           isPosRate
                             ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                             : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'

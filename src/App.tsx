@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { SAMPLE_DATASETS, SampleDataset } from './data/sampleDatasets';
 import { FunnelConfig, RawEvent, StepResult } from './types/funnel';
 import { calculateFunnel, calculateSegmentedFunnel } from './engine/funnelEngine';
@@ -12,6 +12,16 @@ import { FunnelComparison } from './components/FunnelComparison';
 import { DetectiveInsights } from './components/DetectiveInsights';
 import { DataIngestionModal } from './components/DataIngestionModal';
 import { DropOffModal } from './components/DropOffModal';
+import { SavedFunnelsModal } from './components/SavedFunnelsModal';
+import {
+  getAllSavedFunnels,
+  getAllCohorts,
+  saveFunnelConfig,
+  deleteFunnelConfig,
+  deleteCohort,
+  StoredFunnelConfig,
+  StoredCohort,
+} from './services/db';
 
 export function App() {
   // Current active dataset
@@ -30,6 +40,7 @@ export function App() {
 
   // Modals state
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isSavedFunnelsModalOpen, setIsSavedFunnelsModalOpen] = useState(false);
   const [inspectModalState, setInspectModalState] = useState<{
     isOpen: boolean;
     step: StepResult | null;
@@ -39,6 +50,42 @@ export function App() {
     step: null,
     type: 'dropped',
   });
+
+  // IndexedDB State
+  const [savedFunnels, setSavedFunnels] = useState<StoredFunnelConfig[]>([]);
+  const [savedCohorts, setSavedCohorts] = useState<StoredCohort[]>([]);
+
+  // Refresh saved items from IndexedDB
+  const refreshIndexedDB = useCallback(async () => {
+    try {
+      const funnels = await getAllSavedFunnels();
+      const cohorts = await getAllCohorts();
+      setSavedFunnels(funnels);
+      setSavedCohorts(cohorts);
+    } catch {
+      // IndexedDB might not be available in certain isolated test envs
+    }
+  }, []);
+
+  useEffect(() => {
+    let ignore = false;
+    async function initDB() {
+      try {
+        const funnels = await getAllSavedFunnels();
+        const cohorts = await getAllCohorts();
+        if (!ignore) {
+          setSavedFunnels(funnels);
+          setSavedCohorts(cohorts);
+        }
+      } catch {
+        // fallback
+      }
+    }
+    initDB();
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   // Calculate available event names & property names in current dataset
   const { availableEvents, availableProperties, uniqueUsersCount } = useMemo(() => {
@@ -87,7 +134,6 @@ export function App() {
     setCurrentDataset(null);
     setEvents(importedEvents);
 
-    // Auto-discover unique events for initial default funnel
     const uniqueEvents = Array.from(new Set(importedEvents.map((e) => e.eventName))).slice(0, 4);
     const uniqueProps = Array.from(
       new Set(importedEvents.flatMap((e) => Object.keys(e.properties)))
@@ -123,28 +169,55 @@ export function App() {
     });
   };
 
+  // Save current funnel to IndexedDB
+  const handleSaveCurrentFunnel = async (name: string) => {
+    const newFunnel: StoredFunnelConfig = {
+      id: `funnel_${Date.now()}`,
+      name,
+      datasetId: currentDataset ? currentDataset.id : 'custom',
+      config: { ...funnelConfig, name },
+      updatedAt: Date.now(),
+    };
+    await saveFunnelConfig(newFunnel);
+    await refreshIndexedDB();
+  };
+
+  // Delete funnel from IndexedDB
+  const handleDeleteFunnel = async (id: string) => {
+    await deleteFunnelConfig(id);
+    await refreshIndexedDB();
+  };
+
+  // Delete cohort from IndexedDB
+  const handleDeleteCohort = async (id: string) => {
+    await deleteCohort(id);
+    await refreshIndexedDB();
+  };
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
       {/* Header */}
       <Header
         currentDataset={currentDataset}
         onSelectSampleDataset={handleSelectSampleDataset}
         onOpenImportModal={() => setIsImportModalOpen(true)}
+        onOpenSavedFunnelsModal={() => setIsSavedFunnelsModalOpen(true)}
         funnelResult={funnelResult}
         totalEventsCount={events.length}
         uniqueUsersCount={uniqueUsersCount}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        savedFunnelsCount={savedFunnels.length}
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
         {/* KPI Overview Bar */}
         <FunnelOverview funnel={funnelResult} />
 
         {/* View Tabs Content */}
         {activeTab === 'funnel' && (
-          <div className="space-y-6">
+          <div className="space-y-5">
             <FunnelBuilder
               config={funnelConfig}
               onChange={setFunnelConfig}
@@ -177,7 +250,6 @@ export function App() {
           <FunnelComparison
             currentFunnel={funnelResult}
             allEvents={events}
-            availableProperties={availableProperties}
           />
         )}
 
@@ -189,16 +261,16 @@ export function App() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-900 py-6 mt-12 bg-slate-950/80 text-xs text-slate-400">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+      {/* Enterprise Footer */}
+      <footer className="border-t border-slate-900 py-4 mt-8 bg-slate-950 text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
           <div className="flex items-center space-x-2">
-            <span className="font-semibold text-slate-300">Funnel Detective</span>
+            <span className="font-semibold text-slate-400">Funnel Detective</span>
             <span>•</span>
-            <span>事件轉換分析與流失偵測平台</span>
+            <span>事件轉換分析工作台</span>
           </div>
-          <div className="text-slate-400">
-            精確獨立用戶計量演算法 • 嚴格防二次計算 • 支援 Vercel 部署
+          <div className="text-slate-500">
+            精確獨立用戶防重複計量 • ECharts 渲染 • IndexedDB 持久化 • 支援 Vercel 部署
           </div>
         </div>
       </footer>
@@ -217,6 +289,21 @@ export function App() {
         step={inspectModalState.step}
         type={inspectModalState.type}
         allEvents={events}
+        datasetId={currentDataset ? currentDataset.id : 'custom'}
+      />
+
+      {/* Saved Funnels IndexedDB Modal */}
+      <SavedFunnelsModal
+        isOpen={isSavedFunnelsModalOpen}
+        onClose={() => setIsSavedFunnelsModalOpen(false)}
+        savedFunnels={savedFunnels}
+        savedCohorts={savedCohorts}
+        currentConfig={funnelConfig}
+        allEvents={events}
+        onSaveCurrentFunnel={handleSaveCurrentFunnel}
+        onLoadFunnel={(cfg) => setFunnelConfig(cfg)}
+        onDeleteFunnel={handleDeleteFunnel}
+        onDeleteCohort={handleDeleteCohort}
       />
     </div>
   );

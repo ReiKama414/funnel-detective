@@ -2,16 +2,26 @@ import Papa from 'papaparse';
 import { ColumnMapping, RawEvent } from '../types/funnel';
 import { parseTimestamp } from './time';
 
+export interface ParseAnomaly {
+  row: number;
+  reason: string;
+  rawData?: Record<string, unknown>;
+}
+
 export interface ParseResult {
   events: RawEvent[];
   errors: string[];
+  anomalies: ParseAnomaly[];
   totalRows: number;
+  validRows: number;
+  invalidRows: number;
   detectedMapping: ColumnMapping;
   availableColumns: string[];
   uniqueEventNames: string[];
   uniqueUsersCount: number;
   minTimestamp?: number;
   maxTimestamp?: number;
+  isLargeFile?: boolean;
 }
 
 const USER_ID_CANDIDATES = [
@@ -99,29 +109,67 @@ export function parseEventsFromRecords(
 ): ParseResult {
   const events: RawEvent[] = [];
   const errors: string[] = [];
+  const anomalies: ParseAnomaly[] = [];
   const uniqueUsers = new Set<string>();
   const eventNamesSet = new Set<string>();
   let minTs = Infinity;
   let maxTs = -Infinity;
 
-  records.forEach((row, index) => {
+  if (!records || records.length === 0) {
+    return {
+      events: [],
+      errors: ['檔案內容為空，無任何可供分析的事件資料列。'],
+      anomalies: [],
+      totalRows: 0,
+      validRows: 0,
+      invalidRows: 0,
+      detectedMapping: mapping,
+      availableColumns: [],
+      uniqueEventNames: [],
+      uniqueUsersCount: 0,
+    };
+  }
+
+  // Row cap for browser safety (50,000 rows max in single memory parse)
+  const isLargeFile = records.length > 50000;
+  const processRecords = isLargeFile ? records.slice(0, 50000) : records;
+
+  processRecords.forEach((row, index) => {
+    const rowNum = index + 1;
+    if (!row || typeof row !== 'object') {
+      anomalies.push({ row: rowNum, reason: '資料列非有效物件結構' });
+      return;
+    }
+
     const rawUserId = row[mapping.userIdField];
     const rawEventName = row[mapping.eventNameField];
     const rawTimestamp = row[mapping.timestampField];
 
     if (rawUserId === undefined || rawUserId === null || String(rawUserId).trim() === '') {
-      errors.push(`Row ${index + 1}: Missing user_id (${mapping.userIdField})`);
+      anomalies.push({
+        row: rowNum,
+        reason: `缺少使用者 ID (欄位: ${mapping.userIdField})`,
+        rawData: row,
+      });
       return;
     }
 
     if (rawEventName === undefined || rawEventName === null || String(rawEventName).trim() === '') {
-      errors.push(`Row ${index + 1}: Missing event_name (${mapping.eventNameField})`);
+      anomalies.push({
+        row: rowNum,
+        reason: `缺少事件名稱 (欄位: ${mapping.eventNameField})`,
+        rawData: row,
+      });
       return;
     }
 
     const ts = parseTimestamp(rawTimestamp);
     if (ts === null) {
-      errors.push(`Row ${index + 1}: Invalid timestamp "${rawTimestamp}"`);
+      anomalies.push({
+        row: rowNum,
+        reason: `時間戳無法解析: "${String(rawTimestamp)}" (欄位: ${mapping.timestampField})`,
+        rawData: row,
+      });
       return;
     }
 
@@ -164,27 +212,66 @@ export function parseEventsFromRecords(
 
   const availableColumns = records.length > 0 ? Object.keys(records[0]) : [];
 
+  if (isLargeFile) {
+    errors.push(`檔案包含 ${records.length.toLocaleString()} 列，為維護瀏覽器流暢性，已自動載入前 50,000 列。`);
+  }
+
   return {
     events,
-    errors: errors.slice(0, 50), // Cap error list for performance
+    errors,
+    anomalies: anomalies.slice(0, 50), // Cap anomaly preview list
     totalRows: records.length,
+    validRows: events.length,
+    invalidRows: anomalies.length,
     detectedMapping: mapping,
     availableColumns,
     uniqueEventNames: Array.from(eventNamesSet).sort(),
     uniqueUsersCount: uniqueUsers.size,
     minTimestamp: minTs === Infinity ? undefined : minTs,
     maxTimestamp: maxTs === -Infinity ? undefined : maxTs,
+    isLargeFile,
   };
 }
 
 export function parseCSV(fileContent: string, customMapping?: Partial<ColumnMapping>): ParseResult {
-  const parsed = Papa.parse<Record<string, unknown>>(fileContent, {
+  const trimmed = fileContent ? fileContent.trim() : '';
+  if (!trimmed) {
+    return {
+      events: [],
+      errors: ['CSV 檔案為空或無有效字元。'],
+      anomalies: [],
+      totalRows: 0,
+      validRows: 0,
+      invalidRows: 0,
+      detectedMapping: { userIdField: 'user_id', eventNameField: 'event_name', timestampField: 'timestamp' },
+      availableColumns: [],
+      uniqueEventNames: [],
+      uniqueUsersCount: 0,
+    };
+  }
+
+  const parsed = Papa.parse<Record<string, unknown>>(trimmed, {
     header: true,
     skipEmptyLines: 'greedy',
     dynamicTyping: true,
   });
 
   const columns = parsed.meta.fields || [];
+  if (columns.length === 0 || parsed.data.length === 0) {
+    return {
+      events: [],
+      errors: ['CSV 檔案缺少標題欄或無有效資料列。'],
+      anomalies: [],
+      totalRows: 0,
+      validRows: 0,
+      invalidRows: 0,
+      detectedMapping: { userIdField: 'user_id', eventNameField: 'event_name', timestampField: 'timestamp' },
+      availableColumns: [],
+      uniqueEventNames: [],
+      uniqueUsersCount: 0,
+    };
+  }
+
   const defaultMapping = detectColumns(columns);
   const finalMapping: ColumnMapping = {
     userIdField: customMapping?.userIdField || defaultMapping.userIdField,
@@ -195,26 +282,56 @@ export function parseCSV(fileContent: string, customMapping?: Partial<ColumnMapp
 
   const res = parseEventsFromRecords(parsed.data, finalMapping);
   if (parsed.errors && parsed.errors.length > 0) {
-    res.errors.unshift(...parsed.errors.map((e) => `CSV parse error at line ${e.row}: ${e.message}`));
+    res.errors.unshift(...parsed.errors.slice(0, 5).map((e) => `CSV 格式異常 (第 ${e.row} 列): ${e.message}`));
   }
   return res;
 }
 
 export function parseJSON(jsonContent: string, customMapping?: Partial<ColumnMapping>): ParseResult {
+  const trimmed = jsonContent ? jsonContent.trim() : '';
+  if (!trimmed) {
+    return {
+      events: [],
+      errors: ['JSON 檔案為空。'],
+      anomalies: [],
+      totalRows: 0,
+      validRows: 0,
+      invalidRows: 0,
+      detectedMapping: { userIdField: 'user_id', eventNameField: 'event_name', timestampField: 'timestamp' },
+      availableColumns: [],
+      uniqueEventNames: [],
+      uniqueUsersCount: 0,
+    };
+  }
+
   try {
-    let parsed = JSON.parse(jsonContent);
-    // If wrapped in an object like { events: [...] } or { data: [...] }
+    let parsed = JSON.parse(trimmed);
     if (!Array.isArray(parsed) && typeof parsed === 'object' && parsed !== null) {
       if (Array.isArray(parsed.events)) parsed = parsed.events;
       else if (Array.isArray(parsed.data)) parsed = parsed.data;
       else if (Array.isArray(parsed.rows)) parsed = parsed.rows;
       else {
-        throw new Error('JSON is not an array of event objects');
+        throw new Error('JSON 物件不包含 events、data 或 rows 事件陣列。');
       }
     }
 
     if (!Array.isArray(parsed)) {
-      throw new Error('Expected JSON array of event objects');
+      throw new Error('預期 JSON 為物件陣列結構 (例如: [{"user_id":"..."}, ...])');
+    }
+
+    if (parsed.length === 0) {
+      return {
+        events: [],
+        errors: ['JSON 陣列為空，無任何事件資料。'],
+        anomalies: [],
+        totalRows: 0,
+        validRows: 0,
+        invalidRows: 0,
+        detectedMapping: { userIdField: 'user_id', eventNameField: 'event_name', timestampField: 'timestamp' },
+        availableColumns: [],
+        uniqueEventNames: [],
+        uniqueUsersCount: 0,
+      };
     }
 
     const columns = parsed.length > 0 ? Object.keys(parsed[0]) : [];
@@ -231,8 +348,11 @@ export function parseJSON(jsonContent: string, customMapping?: Partial<ColumnMap
     const message = err instanceof Error ? err.message : String(err);
     return {
       events: [],
-      errors: [`JSON parse failure: ${message}`],
+      errors: [`JSON 解析失敗: ${message}`],
+      anomalies: [],
       totalRows: 0,
+      validRows: 0,
+      invalidRows: 0,
       detectedMapping: { userIdField: 'user_id', eventNameField: 'event_name', timestampField: 'timestamp' },
       availableColumns: [],
       uniqueEventNames: [],

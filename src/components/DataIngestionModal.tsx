@@ -5,9 +5,11 @@ import {
   AlertTriangle,
   CheckCircle2,
   Table,
+  HardDrive,
 } from 'lucide-react';
 import { ColumnMapping, RawEvent } from '../types/funnel';
 import { parseCSV, parseJSON, ParseResult } from '../utils/dataParser';
+import { saveDataset } from '../services/db';
 
 interface DataIngestionModalProps {
   isOpen: boolean;
@@ -30,12 +32,30 @@ export const DataIngestionModal: React.FC<DataIngestionModalProps> = ({
     timestampField: 'timestamp',
   });
   const [fileType, setFileType] = useState<'csv' | 'json'>('csv');
+  const [saveToIndexedDB, setSaveToIndexedDB] = useState<boolean>(true);
 
   if (!isOpen) return null;
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (file.size === 0) {
+      setParseResult({
+        events: [],
+        errors: ['檔案大小為 0 字節，內容為空。'],
+        anomalies: [],
+        totalRows: 0,
+        validRows: 0,
+        invalidRows: 0,
+        detectedMapping: columnMapping,
+        availableColumns: [],
+        uniqueEventNames: [],
+        uniqueUsersCount: 0,
+      });
+      setFileName(file.name);
+      return;
+    }
 
     setFileName(file.name);
     const isJson = file.name.endsWith('.json');
@@ -44,7 +64,21 @@ export const DataIngestionModal: React.FC<DataIngestionModalProps> = ({
     const reader = new FileReader();
     reader.onload = (event) => {
       const content = event.target?.result as string;
-      if (!content) return;
+      if (!content || !content.trim()) {
+        setParseResult({
+          events: [],
+          errors: ['檔案內容為空。'],
+          anomalies: [],
+          totalRows: 0,
+          validRows: 0,
+          invalidRows: 0,
+          detectedMapping: columnMapping,
+          availableColumns: [],
+          uniqueEventNames: [],
+          uniqueUsersCount: 0,
+        });
+        return;
+      }
 
       const result = isJson ? parseJSON(content) : parseCSV(content);
       setParseResult(result);
@@ -54,7 +88,21 @@ export const DataIngestionModal: React.FC<DataIngestionModalProps> = ({
   };
 
   const handlePasteParse = () => {
-    if (!rawText.trim()) return;
+    if (!rawText.trim()) {
+      setParseResult({
+        events: [],
+        errors: ['貼上內容為空，請輸入有效資料。'],
+        anomalies: [],
+        totalRows: 0,
+        validRows: 0,
+        invalidRows: 0,
+        detectedMapping: columnMapping,
+        availableColumns: [],
+        uniqueEventNames: [],
+        uniqueUsersCount: 0,
+      });
+      return;
+    }
     const isJson = rawText.trim().startsWith('[') || rawText.trim().startsWith('{');
     setFileType(isJson ? 'json' : 'csv');
     setFileName(isJson ? 'pasted_data.json' : 'pasted_data.csv');
@@ -68,52 +116,67 @@ export const DataIngestionModal: React.FC<DataIngestionModalProps> = ({
     const updated = { ...columnMapping, [key]: value };
     setColumnMapping(updated);
 
-    // Re-parse with updated mapping if we have rawText or parseResult
-    if (parseResult) {
-      if (rawText) {
-        const reParsed = fileType === 'json' ? parseJSON(rawText, updated) : parseCSV(rawText, updated);
-        setParseResult(reParsed);
-      }
+    if (parseResult && rawText) {
+      const reParsed = fileType === 'json' ? parseJSON(rawText, updated) : parseCSV(rawText, updated);
+      setParseResult(reParsed);
     }
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!parseResult || parseResult.events.length === 0) return;
-    onImportSuccess(parseResult.events, fileName || '自訂資料集');
+    const finalName = fileName || '自訂資料集';
+
+    if (saveToIndexedDB) {
+      try {
+        await saveDataset({
+          id: `dataset_${Date.now()}`,
+          name: finalName,
+          source: 'imported',
+          createdAt: Date.now(),
+          totalEvents: parseResult.events.length,
+          uniqueUsers: parseResult.uniqueUsersCount,
+          events: parseResult.events,
+        });
+      } catch {
+        // Fallback gracefully
+      }
+    }
+
+    onImportSuccess(parseResult.events, finalName);
     onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div className="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center space-x-2.5">
-            <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">
+            <div className="p-2 bg-indigo-500/10 rounded text-indigo-400">
               <Upload className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-slate-100 m-0">匯入事件資料 (CSV / JSON)</h2>
+              <h2 className="text-sm font-bold text-slate-100 m-0">匯入事件資料 (CSV / JSON)</h2>
               <p className="text-xs text-slate-400 m-0">
-                支援包含 user_id、event_name、timestamp 的檔案，並自動識別擴充屬性
+                嚴格驗證異常資料、空檔案與時序，支援 IndexedDB 持久化保存
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+            className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-5">
-          {/* Tabs: Upload vs Paste */}
-          <div className="flex space-x-2 border-b border-slate-800 pb-3">
+        <div className="p-6 overflow-y-auto flex-1 space-y-4">
+          {/* Tabs */}
+          <div className="flex space-x-2 border-b border-slate-800 pb-2.5">
             <button
               onClick={() => setActiveMode('upload')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition ${
+              className={`px-3 py-1 text-xs font-semibold rounded transition ${
                 activeMode === 'upload'
                   ? 'bg-indigo-600 text-white'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
@@ -123,24 +186,24 @@ export const DataIngestionModal: React.FC<DataIngestionModalProps> = ({
             </button>
             <button
               onClick={() => setActiveMode('paste')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition ${
+              className={`px-3 py-1 text-xs font-semibold rounded transition ${
                 activeMode === 'paste'
                   ? 'bg-indigo-600 text-white'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
               }`}
             >
-              直接貼上文本
+              直接貼上文字內容
             </button>
           </div>
 
           {activeMode === 'upload' ? (
-            <label className="border-2 border-dashed border-slate-700 hover:border-indigo-500/60 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer bg-slate-950/40 hover:bg-slate-800/20 transition group">
-              <Upload className="w-8 h-8 text-slate-400 group-hover:text-indigo-400 transition mb-2" />
-              <span className="text-sm font-medium text-slate-200">
-                點擊上傳或拖曳 CSV / JSON 檔案至此
+            <label className="border border-dashed border-slate-700 hover:border-indigo-500/70 rounded-lg p-7 flex flex-col items-center justify-center cursor-pointer bg-slate-950/40 hover:bg-slate-800/20 transition group">
+              <Upload className="w-7 h-7 text-slate-400 group-hover:text-indigo-400 transition mb-2" />
+              <span className="text-xs font-medium text-slate-200">
+                點擊選擇檔案或拖曳 CSV / JSON 檔案至此
               </span>
-              <span className="text-xs text-slate-500 mt-1">
-                支援 ISO8601、時間戳（毫秒/秒）與常用日期格式
+              <span className="text-[11px] text-slate-500 mt-1">
+                支援 ISO 8601、UNIX 毫秒/秒戳記與自訂擴充屬性
               </span>
               <input
                 type="file"
@@ -156,205 +219,162 @@ export const DataIngestionModal: React.FC<DataIngestionModalProps> = ({
                 onChange={(e) => setRawText(e.target.value)}
                 placeholder="貼上 CSV 文本或 JSON 陣列 (例如: user_id,event_name,timestamp,device...)"
                 rows={6}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500 resize-none"
+                className="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500 resize-none"
               />
               <button
                 onClick={handlePasteParse}
-                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium transition"
+                className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs font-medium transition"
               >
-                解析貼上的資料
+                解析內容
               </button>
             </div>
           )}
 
           {/* Parse Result Summary & Column Mapping */}
           {parseResult && (
-            <div className="space-y-4 pt-2">
+            <div className="space-y-3.5 pt-1">
               {/* Stats Bar */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-                  <span className="text-[11px] text-slate-400">總行數 / 事件</span>
-                  <p className="text-lg font-bold text-slate-100 m-0">
-                    {parseResult.events.length.toLocaleString()}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div className="bg-slate-950/60 p-2.5 rounded border border-slate-800">
+                  <span className="text-[11px] text-slate-400">總行數</span>
+                  <p className="text-base font-bold text-slate-100 font-mono m-0">
+                    {parseResult.totalRows.toLocaleString()}
                   </p>
                 </div>
-                <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-                  <span className="text-[11px] text-slate-400">獨立使用者數</span>
-                  <p className="text-lg font-bold text-indigo-400 m-0">
+                <div className="bg-slate-950/60 p-2.5 rounded border border-slate-800">
+                  <span className="text-[11px] text-slate-400">有效事件</span>
+                  <p className="text-base font-bold text-emerald-400 font-mono m-0">
+                    {parseResult.validRows.toLocaleString()}
+                  </p>
+                </div>
+                <div className="bg-slate-950/60 p-2.5 rounded border border-slate-800">
+                  <span className="text-[11px] text-slate-400">獨立使用者</span>
+                  <p className="text-base font-bold text-indigo-400 font-mono m-0">
                     {parseResult.uniqueUsersCount.toLocaleString()}
                   </p>
                 </div>
-                <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-                  <span className="text-[11px] text-slate-400">不重複事件類型</span>
-                  <p className="text-lg font-bold text-cyan-400 m-0">
-                    {parseResult.uniqueEventNames.length}
+                <div className="bg-slate-950/60 p-2.5 rounded border border-slate-800">
+                  <span className="text-[11px] text-slate-400">異常略過列</span>
+                  <p
+                    className={`text-base font-bold font-mono m-0 ${
+                      parseResult.invalidRows > 0 ? 'text-amber-400' : 'text-slate-400'
+                    }`}
+                  >
+                    {parseResult.invalidRows.toLocaleString()}
                   </p>
-                </div>
-                <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-                  <span className="text-[11px] text-slate-400">解析狀態</span>
-                  <div className="flex items-center space-x-1.5 mt-0.5">
-                    {parseResult.events.length > 0 ? (
-                      <>
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                        <span className="text-xs font-medium text-emerald-400">成功</span>
-                      </>
-                    ) : (
-                      <>
-                        <AlertTriangle className="w-4 h-4 text-rose-400" />
-                        <span className="text-xs font-medium text-rose-400">無有效事件</span>
-                      </>
-                    )}
-                  </div>
                 </div>
               </div>
 
               {/* Column Mapping Selector */}
-              <div className="bg-slate-950/40 p-4 rounded-xl border border-slate-800 space-y-3">
-                <h3 className="text-xs font-semibold text-slate-300 m-0 flex items-center space-x-1.5">
-                  <Table className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>欄位對應檢查與確認</span>
-                </h3>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label className="text-[11px] text-slate-400 block mb-1">
-                      使用者識別欄位 (user_id)
-                    </label>
-                    <select
-                      value={columnMapping.userIdField}
-                      onChange={(e) => handleRemap('userIdField', e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-                    >
-                      {parseResult.availableColumns.map((col) => (
-                        <option key={col} value={col}>
-                          {col}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] text-slate-400 block mb-1">
-                      事件名稱欄位 (event_name)
-                    </label>
-                    <select
-                      value={columnMapping.eventNameField}
-                      onChange={(e) => handleRemap('eventNameField', e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-                    >
-                      {parseResult.availableColumns.map((col) => (
-                        <option key={col} value={col}>
-                          {col}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] text-slate-400 block mb-1">
-                      時間戳欄位 (timestamp)
-                    </label>
-                    <select
-                      value={columnMapping.timestampField}
-                      onChange={(e) => handleRemap('timestampField', e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-                    >
-                      {parseResult.availableColumns.map((col) => (
-                        <option key={col} value={col}>
-                          {col}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Detected Extra Properties */}
-                {columnMapping.propertyFields && columnMapping.propertyFields.length > 0 && (
-                  <div className="pt-2 text-[11px] text-slate-400">
-                    <span>已提取附加屬性（可用於分群與篩選）：</span>
-                    <div className="flex flex-wrap gap-1.5 mt-1">
-                      {columnMapping.propertyFields.map((prop) => (
-                        <span
-                          key={prop}
-                          className="px-2 py-0.5 rounded bg-slate-800 text-indigo-300 font-mono text-[10px]"
-                        >
-                          {prop}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Data Preview Table */}
               {parseResult.events.length > 0 && (
-                <div className="space-y-1.5">
-                  <span className="text-[11px] font-medium text-slate-400">前 5 筆預覽</span>
-                  <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/60">
-                    <table className="w-full text-left text-xs font-mono">
-                      <thead className="bg-slate-900/80 text-[11px] text-slate-400 border-b border-slate-800">
-                        <tr>
-                          <th className="px-3 py-2">User ID</th>
-                          <th className="px-3 py-2">Event</th>
-                          <th className="px-3 py-2">Timestamp</th>
-                          <th className="px-3 py-2">Properties</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-850">
-                        {parseResult.events.slice(0, 5).map((ev, i) => (
-                          <tr key={i} className="hover:bg-slate-900/40">
-                            <td className="px-3 py-2 text-indigo-300">{ev.userId}</td>
-                            <td className="px-3 py-2 text-emerald-400">{ev.eventName}</td>
-                            <td className="px-3 py-2 text-slate-400">
-                              {new Date(ev.timestamp).toLocaleString()}
-                            </td>
-                            <td className="px-3 py-2 text-slate-300 text-[11px]">
-                              {JSON.stringify(ev.properties)}
-                            </td>
-                          </tr>
+                <div className="bg-slate-950/40 p-3.5 rounded border border-slate-800 space-y-2.5">
+                  <h3 className="text-xs font-semibold text-slate-300 m-0 flex items-center space-x-1.5">
+                    <Table className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>欄位對應確認</span>
+                  </h3>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <div>
+                      <label className="text-[11px] text-slate-400 block mb-1">
+                        使用者 ID (user_id)
+                      </label>
+                      <select
+                        value={columnMapping.userIdField}
+                        onChange={(e) => handleRemap('userIdField', e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                      >
+                        {parseResult.availableColumns.map((col) => (
+                          <option key={col} value={col}>
+                            {col}
+                          </option>
                         ))}
-                      </tbody>
-                    </table>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] text-slate-400 block mb-1">
+                        事件名稱 (event_name)
+                      </label>
+                      <select
+                        value={columnMapping.eventNameField}
+                        onChange={(e) => handleRemap('eventNameField', e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                      >
+                        {parseResult.availableColumns.map((col) => (
+                          <option key={col} value={col}>
+                            {col}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] text-slate-400 block mb-1">
+                        時間戳記 (timestamp)
+                      </label>
+                      <select
+                        value={columnMapping.timestampField}
+                        onChange={(e) => handleRemap('timestampField', e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                      >
+                        {parseResult.availableColumns.map((col) => (
+                          <option key={col} value={col}>
+                            {col}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* Errors Display if any */}
+              {/* Anomalies and Errors List */}
               {parseResult.errors.length > 0 && (
-                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 space-y-1">
+                <div className="p-3 rounded bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 space-y-1">
                   <div className="flex items-center space-x-1.5 font-semibold">
-                    <AlertTriangle className="w-4 h-4" />
-                    <span>部分資料警告 ({parseResult.errors.length} 條)</span>
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    <span>解析警告或錯誤 ({parseResult.errors.length})</span>
                   </div>
                   <ul className="list-disc pl-4 space-y-0.5 text-[11px] text-amber-200/80">
-                    {parseResult.errors.slice(0, 3).map((err, idx) => (
+                    {parseResult.errors.map((err, idx) => (
                       <li key={idx}>{err}</li>
                     ))}
-                    {parseResult.errors.length > 3 && (
-                      <li>...還有 {parseResult.errors.length - 3} 筆提示</li>
-                    )}
                   </ul>
                 </div>
               )}
+
+              {/* IndexedDB Persistence Checkbox */}
+              <label className="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer pt-1">
+                <input
+                  type="checkbox"
+                  checked={saveToIndexedDB}
+                  onChange={(e) => setSaveToIndexedDB(e.target.checked)}
+                  className="rounded bg-slate-950 border-slate-700 text-indigo-600 focus:ring-0"
+                />
+                <span className="flex items-center space-x-1.5">
+                  <HardDrive className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>將此資料集永久保存至本地 IndexedDB 資料庫（離線可用）</span>
+                </span>
+              </label>
             </div>
           )}
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 border-t border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <div className="px-6 py-3 border-t border-slate-800 flex items-center justify-between bg-slate-950/60">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-200 transition"
+            className="px-3 py-1 text-xs font-medium text-slate-400 hover:text-slate-200 transition"
           >
             取消
           </button>
           <button
             onClick={handleConfirm}
             disabled={!parseResult || parseResult.events.length === 0}
-            className="px-5 py-2 text-xs font-medium rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:pointer-events-none text-white shadow-lg shadow-indigo-600/30 transition flex items-center space-x-2"
+            className="px-4 py-1.5 text-xs font-medium rounded bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:pointer-events-none text-white transition flex items-center space-x-1.5"
           >
-            <CheckCircle2 className="w-4 h-4" />
-            <span>確認匯入並分析</span>
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>確認匯入並開始分析</span>
           </button>
         </div>
       </div>

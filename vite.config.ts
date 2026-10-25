@@ -9,11 +9,12 @@ export default defineConfig({
     tailwindcss(),
   ],
   build: {
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 2000,
   },
   // @ts-ignore
   test: {
     globals: true,
     environment: 'node',
+    include: ['src/**/*.test.ts'],
   },
 });
