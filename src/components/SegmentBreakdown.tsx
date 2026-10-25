@@ -11,12 +11,12 @@ interface SegmentBreakdownProps {
 }
 
 const SEGMENT_COLORS = [
-  '#6366f1',
-  '#06b6d4',
-  '#10b981',
-  '#f59e0b',
-  '#ec4899',
-  '#8b5cf6',
+  '#4f46e5',
+  '#0284c7',
+  '#059669',
+  '#d97706',
+  '#db2777',
+  '#7c3aed',
 ];
 
 export const SegmentBreakdown: React.FC<SegmentBreakdownProps> = ({
@@ -28,11 +28,11 @@ export const SegmentBreakdown: React.FC<SegmentBreakdownProps> = ({
 
   if (!property || segments.length === 0) {
     return (
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-10 text-center space-y-4">
-        <Layers className="w-10 h-10 text-slate-600 mx-auto" />
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-8 sm:p-10 text-center space-y-4">
+        <Layers className="w-10 h-10 text-slate-400 dark:text-slate-600 mx-auto" />
         <div>
-          <h3 className="text-sm font-semibold text-slate-200 m-0">尚未選擇分群屬性</h3>
-          <p className="text-xs text-slate-400 mt-1 m-0">
+          <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 m-0">尚未選擇分群屬性</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 m-0">
             請選擇一個事件屬性（例如：裝置、國家、行銷管道或方案），即可檢視各客群的漏斗轉換差異。
           </p>
         </div>
@@ -42,7 +42,7 @@ export const SegmentBreakdown: React.FC<SegmentBreakdownProps> = ({
             <button
               key={p}
               onClick={() => onSelectProperty(p)}
-              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-indigo-300 border border-slate-700 transition"
+              className="px-3 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs text-indigo-700 dark:text-indigo-300 border border-slate-200 dark:border-slate-700 transition"
             >
               依「{p}」分群
             </button>
@@ -59,23 +59,23 @@ export const SegmentBreakdown: React.FC<SegmentBreakdownProps> = ({
   const bestSegment = sortedSegments[0];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       {/* Property Switcher Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900 border border-slate-800 p-4 rounded-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 sm:p-4 rounded-xl transition-colors">
         <div className="flex items-center space-x-2">
-          <Layers className="w-4 h-4 text-cyan-400" />
-          <span className="text-xs font-semibold text-slate-200">
-            目前分群維度：<span className="text-indigo-400 font-mono">{property}</span>
+          <Layers className="w-4 h-4 text-cyan-600 dark:text-cyan-400 shrink-0" />
+          <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
+            目前分群維度：<span className="text-indigo-600 dark:text-indigo-400 font-mono">{property}</span>
           </span>
-          <span className="text-xs text-slate-500">({segments.length} 個分群)</span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">({segments.length} 個分群)</span>
         </div>
 
         <div className="flex items-center space-x-2">
-          <span className="text-xs text-slate-400">切換分群：</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400 shrink-0">切換分群：</span>
           <select
             value={property}
             onChange={(e) => onSelectProperty(e.target.value)}
-            className="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+            className="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded px-2.5 py-1 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
           >
             {availableProperties.map((p) => (
               <option key={p} value={p}>
@@ -88,27 +88,27 @@ export const SegmentBreakdown: React.FC<SegmentBreakdownProps> = ({
 
       {/* Best Segment Champion Card */}
       {bestSegment && (
-        <div className="bg-slate-900 border border-indigo-500/30 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+        <div className="bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-500/30 rounded-xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs transition-colors">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-400">
+            <div className="p-2 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-lg text-amber-600 dark:text-amber-400 shrink-0">
               <Award className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
                   表現最優客群
                 </span>
-                <span className="text-xs font-bold text-slate-100">
+                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100">
                   {bestSegment.segmentValue}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5 m-0">
+              <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5 m-0">
                 總體轉換率達到{' '}
-                <strong className="text-emerald-400 font-mono">
+                <strong className="text-emerald-600 dark:text-emerald-400 font-mono">
                   {formatPercentage(bestSegment.result.overallConversionRate)}
                 </strong>
                 ，高出總體平均{' '}
-                <strong className="text-indigo-300 font-mono">
+                <strong className="text-indigo-600 dark:text-indigo-300 font-mono">
                   +
                   {formatPercentage(
                     bestSegment.result.overallConversionRate -
@@ -119,9 +119,9 @@ export const SegmentBreakdown: React.FC<SegmentBreakdownProps> = ({
             </div>
           </div>
 
-          <div className="text-right self-end sm:self-center">
-            <span className="text-[11px] text-slate-400 block">中位完成時間</span>
-            <span className="text-xs font-bold text-cyan-400 font-mono">
+          <div className="text-right self-end sm:self-center shrink-0">
+            <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 block">中位完成時間</span>
+            <span className="text-xs sm:text-sm font-bold text-cyan-600 dark:text-cyan-400 font-mono">
               {formatDuration(bestSegment.result.overallTimeMetrics?.medianMs)}
             </span>
           </div>
@@ -129,12 +129,12 @@ export const SegmentBreakdown: React.FC<SegmentBreakdownProps> = ({
       )}
 
       {/* Grouped Bar Chart via ECharts */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
-        <div className="pb-2 border-b border-slate-800">
-          <h3 className="text-xs font-bold uppercase tracking-wide text-slate-100 m-0">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-5 shadow-xs space-y-4 transition-colors">
+        <div className="pb-2 border-b border-slate-200 dark:border-slate-800">
+          <h3 className="text-xs font-bold uppercase tracking-wide text-slate-900 dark:text-slate-100 m-0">
             各步驟轉換率跨分群對比 (ECharts Grouped Bars)
           </h3>
-          <p className="text-xs text-slate-400 m-0">
+          <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 m-0">
             對照不同客群從起點到各步驟的留存率差異 (%)
           </p>
         </div>
@@ -143,57 +143,57 @@ export const SegmentBreakdown: React.FC<SegmentBreakdownProps> = ({
       </div>
 
       {/* Detailed Segment Performance Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-3">
-        <h3 className="text-xs font-bold uppercase tracking-wide text-slate-100 m-0">分群指標詳表</h3>
-        <div className="overflow-x-auto rounded-lg border border-slate-800">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 font-medium">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-5 shadow-xs space-y-3 transition-colors">
+        <h3 className="text-xs font-bold uppercase tracking-wide text-slate-900 dark:text-slate-100 m-0">分群指標詳表</h3>
+        <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
+          <table className="w-full text-left text-xs min-w-[500px]">
+            <thead className="bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-medium">
               <tr>
-                <th className="px-4 py-2.5">分群名稱 ({property})</th>
-                <th className="px-4 py-2.5">進入人數</th>
-                <th className="px-4 py-2.5">完成人數</th>
-                <th className="px-4 py-2.5">總體轉換率</th>
-                <th className="px-4 py-2.5">與平均差異</th>
-                <th className="px-4 py-2.5">中位耗時</th>
+                <th className="px-3 sm:px-4 py-2.5">分群名稱 ({property})</th>
+                <th className="px-3 sm:px-4 py-2.5">進入人數</th>
+                <th className="px-3 sm:px-4 py-2.5">完成人數</th>
+                <th className="px-3 sm:px-4 py-2.5">總體轉換率</th>
+                <th className="px-3 sm:px-4 py-2.5">與平均差異</th>
+                <th className="px-3 sm:px-4 py-2.5">中位耗時</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-850">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-850">
               {sortedSegments.map((seg, idx) => {
                 const diff =
                   seg.result.overallConversionRate - overallResult.overallConversionRate;
                 const isPositive = diff >= 0;
 
                 return (
-                  <tr key={idx} className="hover:bg-slate-950/40">
-                    <td className="px-4 py-2.5 font-semibold text-slate-200 flex items-center space-x-2">
+                  <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-950/40">
+                    <td className="px-3 sm:px-4 py-2.5 font-semibold text-slate-800 dark:text-slate-200 flex items-center space-x-2">
                       <div
-                        className="w-2.5 h-2.5 rounded-full"
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
                         style={{ backgroundColor: SEGMENT_COLORS[idx % SEGMENT_COLORS.length] }}
                       />
-                      <span>{seg.segmentValue}</span>
+                      <span className="truncate">{seg.segmentValue}</span>
                     </td>
-                    <td className="px-4 py-2.5 text-slate-300 font-mono">
+                    <td className="px-3 sm:px-4 py-2.5 text-slate-600 dark:text-slate-300 font-mono">
                       {seg.result.stepResults[0]?.userCount.toLocaleString() || 0}
                     </td>
-                    <td className="px-4 py-2.5 text-slate-300 font-mono">
+                    <td className="px-3 sm:px-4 py-2.5 text-slate-600 dark:text-slate-300 font-mono">
                       {seg.result.totalCompletedUsers.toLocaleString()}
                     </td>
-                    <td className="px-4 py-2.5 font-bold text-slate-100 font-mono">
+                    <td className="px-3 sm:px-4 py-2.5 font-bold text-slate-900 dark:text-slate-100 font-mono">
                       {formatPercentage(seg.result.overallConversionRate)}
                     </td>
-                    <td className="px-4 py-2.5 font-mono">
+                    <td className="px-3 sm:px-4 py-2.5 font-mono">
                       <span
-                        className={`px-1.5 py-0.5 rounded text-[11px] font-semibold ${
+                        className={`px-1.5 py-0.2 rounded text-[10px] sm:text-[11px] font-semibold ${
                           isPositive
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                            : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                            ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20'
+                            : 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20'
                         }`}
                       >
                         {isPositive ? '+' : ''}
                         {formatPercentage(diff)}
                       </span>
                     </td>
-                    <td className="px-4 py-2.5 text-slate-400 font-mono">
+                    <td className="px-3 sm:px-4 py-2.5 text-slate-600 dark:text-slate-400 font-mono">
                       {formatDuration(seg.result.overallTimeMetrics?.medianMs)}
                     </td>
                   </tr>

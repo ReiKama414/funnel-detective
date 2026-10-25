@@ -2,6 +2,7 @@ import React from 'react';
 import ReactECharts from 'echarts-for-react';
 import { FunnelResult } from '../../types/funnel';
 import { formatDuration, formatPercentage } from '../../utils/time';
+import { useTheme } from '../../context/useTheme';
 
 interface EChartsFunnelProps {
   funnel: FunnelResult;
@@ -9,13 +10,22 @@ interface EChartsFunnelProps {
 }
 
 export const EChartsFunnel: React.FC<EChartsFunnelProps> = ({ funnel, onSelectStep }) => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+
   const steps = funnel.stepResults;
   const baseCount = steps[0]?.userCount || 1;
 
-  // Prepare data for ECharts funnel or stage bars
   const stepNames = steps.map((s) => s.stepName);
   const userCounts = steps.map((s) => s.userCount);
   const conversionRates = steps.map((s) => Number(((s.conversionRateFromStart || 0) * 100).toFixed(1)));
+
+  const textColor = isDark ? '#94a3b8' : '#64748b';
+  const labelColor = isDark ? '#cbd5e1' : '#1e293b';
+  const borderColor = isDark ? '#334155' : '#e2e8f0';
+  const splitLineColor = isDark ? '#1e293b' : '#f1f5f9';
+  const tooltipBg = isDark ? '#0f172a' : '#ffffff';
+  const tooltipText = isDark ? '#f8fafc' : '#0f172a';
 
   const option = {
     backgroundColor: 'transparent',
@@ -24,11 +34,11 @@ export const EChartsFunnel: React.FC<EChartsFunnelProps> = ({ funnel, onSelectSt
       axisPointer: {
         type: 'shadow',
       },
-      backgroundColor: '#0f172a',
-      borderColor: '#334155',
+      backgroundColor: tooltipBg,
+      borderColor: borderColor,
       borderWidth: 1,
       textStyle: {
-        color: '#f8fafc',
+        color: tooltipText,
         fontSize: 12,
       },
       formatter: (params: any) => {
@@ -39,38 +49,38 @@ export const EChartsFunnel: React.FC<EChartsFunnelProps> = ({ funnel, onSelectSt
 
         return `
           <div style="font-family: ui-sans-serif, system-ui, sans-serif; line-height: 1.5; min-width: 180px;">
-            <div style="font-weight: 700; color: #f8fafc; border-bottom: 1px solid #334155; padding-bottom: 4px; margin-bottom: 6px;">
+            <div style="font-weight: 700; color: ${tooltipText}; border-bottom: 1px solid ${borderColor}; padding-bottom: 4px; margin-bottom: 6px;">
               步驟 ${idx + 1}：${s.stepName}
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
-              <span style="color: #94a3b8;">目標事件:</span>
-              <span style="font-family: monospace; color: #67e8f9;">${s.eventName}</span>
+              <span style="color: ${textColor};">目標事件:</span>
+              <span style="font-family: monospace; color: #0284c7;">${s.eventName}</span>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
-              <span style="color: #94a3b8;">獨立使用者:</span>
-              <span style="font-weight: 600; color: #f8fafc;">${s.userCount.toLocaleString()} 人</span>
+              <span style="color: ${textColor};">獨立使用者:</span>
+              <span style="font-weight: 600; color: ${tooltipText};">${s.userCount.toLocaleString()} 人</span>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
-              <span style="color: #94a3b8;">總體轉換率:</span>
-              <span style="font-weight: 600; color: #818cf8;">${formatPercentage(s.conversionRateFromStart)}</span>
+              <span style="color: ${textColor};">總體轉換率:</span>
+              <span style="font-weight: 600; color: #4f46e5;">${formatPercentage(s.conversionRateFromStart)}</span>
             </div>
             ${
               !isFirst
                 ? `
             <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
-              <span style="color: #94a3b8;">前步轉換率:</span>
-              <span style="font-weight: 600; color: #34d399;">${formatPercentage(s.conversionRateFromPrev)}</span>
+              <span style="color: ${textColor};">前步轉換率:</span>
+              <span style="font-weight: 600; color: #059669;">${formatPercentage(s.conversionRateFromPrev)}</span>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
-              <span style="color: #94a3b8;">此步流失人數:</span>
-              <span style="font-weight: 600; color: #f87171;">${s.dropOffCount} 人 (${formatPercentage(s.dropOffRate)})</span>
+              <span style="color: ${textColor};">此步流失人數:</span>
+              <span style="font-weight: 600; color: #dc2626;">${s.dropOffCount} 人 (${formatPercentage(s.dropOffRate)})</span>
             </div>
             ${
               s.stepTimeMetrics
                 ? `
             <div style="display: flex; justify-content: space-between; font-size: 11px;">
-              <span style="color: #94a3b8;">中位推進耗時:</span>
-              <span style="font-weight: 600; color: #fbbf24;">${formatDuration(s.stepTimeMetrics.medianMs)}</span>
+              <span style="color: ${textColor};">中位推進耗時:</span>
+              <span style="font-weight: 600; color: #d97706;">${formatDuration(s.stepTimeMetrics.medianMs)}</span>
             </div>
             `
                 : ''
@@ -83,18 +93,18 @@ export const EChartsFunnel: React.FC<EChartsFunnelProps> = ({ funnel, onSelectSt
       },
     },
     grid: {
-      left: '3%',
+      left: '2%',
       right: '6%',
-      bottom: '8%',
-      top: '12%',
+      bottom: '6%',
+      top: '8%',
       containLabel: true,
     },
     xAxis: {
       type: 'value',
-      axisLine: { lineStyle: { color: '#334155' } },
-      splitLine: { lineStyle: { color: '#1e293b', type: 'dashed' } },
+      axisLine: { lineStyle: { color: borderColor } },
+      splitLine: { lineStyle: { color: splitLineColor, type: 'dashed' } },
       axisLabel: {
-        color: '#94a3b8',
+        color: textColor,
         fontSize: 11,
         formatter: '{value} 人',
       },
@@ -103,11 +113,11 @@ export const EChartsFunnel: React.FC<EChartsFunnelProps> = ({ funnel, onSelectSt
     yAxis: {
       type: 'category',
       data: stepNames.slice().reverse(),
-      axisLine: { lineStyle: { color: '#334155' } },
+      axisLine: { lineStyle: { color: borderColor } },
       axisTick: { show: false },
       axisLabel: {
-        color: '#cbd5e1',
-        fontSize: 12,
+        color: labelColor,
+        fontSize: 11,
         fontWeight: 500,
       },
     },
@@ -115,14 +125,14 @@ export const EChartsFunnel: React.FC<EChartsFunnelProps> = ({ funnel, onSelectSt
       {
         name: '獨立人數',
         type: 'bar',
-        barWidth: 26,
+        barWidth: 24,
         data: userCounts.slice().reverse().map((count, i) => {
           const originalIdx = steps.length - 1 - i;
           const isBottleneck = funnel.bottleneckStepIndex === originalIdx;
           return {
             value: count,
             itemStyle: {
-              color: isBottleneck ? '#f43f5e' : '#6366f1',
+              color: isBottleneck ? '#e11d48' : '#4f46e5',
               borderRadius: [0, 4, 4, 0],
             },
           };
@@ -130,7 +140,7 @@ export const EChartsFunnel: React.FC<EChartsFunnelProps> = ({ funnel, onSelectSt
         label: {
           show: true,
           position: 'right',
-          color: '#e2e8f0',
+          color: labelColor,
           fontSize: 11,
           fontFamily: 'monospace',
           formatter: (params: any) => {
@@ -151,10 +161,10 @@ export const EChartsFunnel: React.FC<EChartsFunnelProps> = ({ funnel, onSelectSt
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full overflow-hidden">
       <ReactECharts
         option={option}
-        style={{ height: `${Math.max(260, steps.length * 52)}px`, width: '100%' }}
+        style={{ height: `${Math.max(240, steps.length * 48)}px`, width: '100%' }}
         onEvents={{ click: onChartClick }}
         opts={{ renderer: 'svg' }}
       />

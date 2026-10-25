@@ -195,7 +195,7 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors selection:bg-indigo-500/20 selection:text-indigo-800 dark:selection:text-indigo-200">
       {/* Header */}
       <Header
         currentDataset={currentDataset}
@@ -211,13 +211,13 @@ export function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-5">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-5 space-y-4 sm:space-y-5">
         {/* KPI Overview Bar */}
         <FunnelOverview funnel={funnelResult} />
 
         {/* View Tabs Content */}
         {activeTab === 'funnel' && (
-          <div className="space-y-5">
+          <div className="space-y-4 sm:space-y-5">
             <FunnelBuilder
               config={funnelConfig}
               onChange={setFunnelConfig}
@@ -261,16 +261,16 @@ export function App() {
         )}
       </main>
 
-      {/* Enterprise Footer */}
-      <footer className="border-t border-slate-900 py-4 mt-8 bg-slate-950 text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+      {/* Enterprise Workbench Footer */}
+      <footer className="border-t border-slate-200 dark:border-slate-800 py-4 bg-white dark:bg-slate-950 text-xs text-slate-500 dark:text-slate-400 transition-colors">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
           <div className="flex items-center space-x-2">
-            <span className="font-semibold text-slate-400">Funnel Detective</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-300">Funnel Detective</span>
             <span>•</span>
             <span>事件轉換分析工作台</span>
           </div>
-          <div className="text-slate-500">
-            精確獨立用戶防重複計量 • ECharts 渲染 • IndexedDB 持久化 • 支援 Vercel 部署
+          <div className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-mono">
+            ECharts • IndexedDB • 黑白雙主題 • 嚴格防重算
           </div>
         </div>
       </footer>

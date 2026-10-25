@@ -1,20 +1,30 @@
 import React from 'react';
 import ReactECharts from 'echarts-for-react';
 import { SegmentedFunnelResult } from '../../types/funnel';
+import { useTheme } from '../../context/useTheme';
 
 interface EChartsSegmentComparisonProps {
   segmentedResult: SegmentedFunnelResult;
 }
 
-const SEGMENT_COLORS = ['#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
+const SEGMENT_COLORS = ['#4f46e5', '#0284c7', '#059669', '#d97706', '#db2777', '#7c3aed'];
 
 export const EChartsSegmentComparison: React.FC<EChartsSegmentComparisonProps> = ({
   segmentedResult,
 }) => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+
   const { segments, overallResult } = segmentedResult;
   const steps = overallResult.stepResults;
 
   const categories = steps.map((s) => s.stepName);
+
+  const textColor = isDark ? '#94a3b8' : '#64748b';
+  const borderColor = isDark ? '#334155' : '#e2e8f0';
+  const splitLineColor = isDark ? '#1e293b' : '#f1f5f9';
+  const tooltipBg = isDark ? '#0f172a' : '#ffffff';
+  const tooltipText = isDark ? '#f8fafc' : '#0f172a';
 
   const series = segments.map((seg, idx) => ({
     name: seg.segmentValue,
@@ -35,18 +45,18 @@ export const EChartsSegmentComparison: React.FC<EChartsSegmentComparisonProps> =
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
-      backgroundColor: '#0f172a',
-      borderColor: '#334155',
+      backgroundColor: tooltipBg,
+      borderColor: borderColor,
       borderWidth: 1,
-      textStyle: { color: '#f8fafc', fontSize: 12 },
+      textStyle: { color: tooltipText, fontSize: 12 },
       formatter: (params: any) => {
         if (!params || !params[0]) return '';
-        let res = `<div style="font-weight:700;margin-bottom:4px;color:#f8fafc;">${params[0].axisValue}</div>`;
+        let res = `<div style="font-weight:700;margin-bottom:4px;color:${tooltipText};">${params[0].axisValue}</div>`;
         for (const item of params) {
           res += `
             <div style="display:flex;justify-content:space-between;gap:12px;font-size:11px;margin-bottom:2px;">
               <span style="color:${item.color};">${item.seriesName}:</span>
-              <span style="font-family:monospace;font-weight:600;color:#f8fafc;">${item.value}%</span>
+              <span style="font-family:monospace;font-weight:600;color:${tooltipText};">${item.value}%</span>
             </div>
           `;
         }
@@ -55,13 +65,13 @@ export const EChartsSegmentComparison: React.FC<EChartsSegmentComparisonProps> =
     },
     legend: {
       data: segments.map((s) => s.segmentValue),
-      textStyle: { color: '#94a3b8', fontSize: 11 },
+      textStyle: { color: textColor, fontSize: 11 },
       top: 0,
       icon: 'roundRect',
     },
     grid: {
-      left: '3%',
-      right: '4%',
+      left: '2%',
+      right: '3%',
       bottom: '10%',
       top: '14%',
       containLabel: true,
@@ -69,16 +79,16 @@ export const EChartsSegmentComparison: React.FC<EChartsSegmentComparisonProps> =
     xAxis: {
       type: 'category',
       data: categories,
-      axisLine: { lineStyle: { color: '#334155' } },
+      axisLine: { lineStyle: { color: borderColor } },
       axisTick: { show: false },
-      axisLabel: { color: '#94a3b8', fontSize: 11 },
+      axisLabel: { color: textColor, fontSize: 11 },
     },
     yAxis: {
       type: 'value',
-      axisLine: { lineStyle: { color: '#334155' } },
-      splitLine: { lineStyle: { color: '#1e293b', type: 'dashed' } },
+      axisLine: { lineStyle: { color: borderColor } },
+      splitLine: { lineStyle: { color: splitLineColor, type: 'dashed' } },
       axisLabel: {
-        color: '#94a3b8',
+        color: textColor,
         fontSize: 11,
         formatter: '{value}%',
       },
@@ -88,8 +98,8 @@ export const EChartsSegmentComparison: React.FC<EChartsSegmentComparisonProps> =
   };
 
   return (
-    <div className="w-full">
-      <ReactECharts option={option} style={{ height: '300px', width: '100%' }} opts={{ renderer: 'svg' }} />
+    <div className="w-full overflow-hidden">
+      <ReactECharts option={option} style={{ height: '290px', width: '100%' }} opts={{ renderer: 'svg' }} />
     </div>
   );
 };

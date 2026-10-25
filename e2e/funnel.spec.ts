@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Funnel Detective - E2E Core User Flows', () => {
   test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('1. 工作台初始載入與預設指標檢驗', async ({ page }) => {
@@ -44,24 +46,24 @@ test.describe('Funnel Detective - E2E Core User Flows', () => {
 
   test('3. 分頁切換功能驗證 (完成時間分布、分群、多漏斗對比、偵探報告)', async ({ page }) => {
     // 1. Time Distribution Tab
-    await page.getByRole('button', { name: '完成時間分布' }).click();
+    await page.getByRole('button', { name: '完成時間分布' }).first().click();
     await expect(page.locator('text=全漏斗完成時間分佈直方圖')).toBeVisible();
     await expect(page.locator('text=中位數 (P50)')).toBeVisible();
 
     // 2. Segments Tab
-    await page.getByRole('button', { name: '屬性分群比較' }).click();
+    await page.getByRole('button', { name: '屬性分群比較' }).first().click();
     await expect(page.locator('text=目前分群維度')).toBeVisible();
     await expect(page.locator('text=表現最優客群')).toBeVisible();
 
     // 3. Compare Tab
-    await page.getByRole('button', { name: '多漏斗對比' }).click();
+    await page.getByRole('button', { name: '多漏斗對比' }).first().click();
     await expect(page.locator('text=多漏斗平行對比 (Funnel Comparison)')).toBeVisible();
     await expect(page.locator('text=基準漏斗 A')).toBeVisible();
     await expect(page.locator('text=對比漏斗 B')).toBeVisible();
     await expect(page.locator('text=步驟指標差異詳表')).toBeVisible();
 
     // 4. Detective Insights Tab
-    await page.getByRole('button', { name: '偵探洞察報告' }).click();
+    await page.getByRole('button', { name: '偵探洞察報告' }).first().click();
     await expect(page.locator('text=漏斗偵探智慧診斷報告')).toBeVisible();
     await expect(page.locator('text=最大流失瓶頸').first()).toBeVisible();
   });
@@ -92,7 +94,7 @@ test.describe('Funnel Detective - E2E Core User Flows', () => {
 
   test('5. 資料匯入與自訂 CSV 解析流程', async ({ page }) => {
     // Open Import Modal
-    await page.getByRole('button', { name: '匯入資料' }).click();
+    await page.getByRole('button', { name: '匯入資料' }).first().click();
     await expect(page.locator('text=匯入事件資料 (CSV / JSON)')).toBeVisible();
 
     // Switch to Paste text mode
