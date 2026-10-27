@@ -56,8 +56,8 @@ export const EChartsTimeHistogram: React.FC<EChartsTimeHistogramProps> = ({
     grid: {
       left: '2%',
       right: '3%',
-      bottom: '14%',
-      top: '12%',
+      bottom: '16%',
+      top: '16%',
       containLabel: true,
     },
     xAxis: {
@@ -80,6 +80,11 @@ export const EChartsTimeHistogram: React.FC<EChartsTimeHistogramProps> = ({
         color: textColor,
         fontSize: 11,
         formatter: '{value} 人',
+      },
+      // 20% margin on top so top labels never touch chart border
+      max: (val: any) => {
+        const peak = val.max || 0;
+        return peak > 0 ? Math.ceil(peak * 1.2) : undefined;
       },
     },
     series: [

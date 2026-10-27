@@ -75,10 +75,10 @@ export const DetectiveInsights: React.FC<DetectiveInsightsProps> = ({
               className={`border rounded-xl p-4 sm:p-5 shadow-xs space-y-3 flex flex-col justify-between transition-colors ${borderClass}`}
             >
               <div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center space-x-2 min-w-0">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center space-x-2 min-w-0 flex-1">
                     <IconComponent className={`w-4 h-4 shrink-0 ${iconColor}`} />
-                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate m-0">
+                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 break-words m-0">
                       {item.title}
                     </h3>
                   </div>

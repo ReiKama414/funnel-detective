@@ -78,6 +78,7 @@ export const EChartsFunnelComparison: React.FC<EChartsFunnelComparisonProps> = (
       },
     },
     legend: {
+      type: 'scroll',
       data: [funnelA.funnelName, funnelB.funnelName],
       textStyle: { color: textColor, fontSize: 11 },
       top: 0,
@@ -86,8 +87,8 @@ export const EChartsFunnelComparison: React.FC<EChartsFunnelComparisonProps> = (
     grid: {
       left: '2%',
       right: '3%',
-      bottom: '10%',
-      top: '14%',
+      bottom: '12%',
+      top: 42,
       containLabel: true,
     },
     xAxis: {
@@ -95,7 +96,15 @@ export const EChartsFunnelComparison: React.FC<EChartsFunnelComparisonProps> = (
       data: categories,
       axisLine: { lineStyle: { color: borderColor } },
       axisTick: { show: false },
-      axisLabel: { color: textColor, fontSize: 11 },
+      axisLabel: {
+        color: textColor,
+        fontSize: 11,
+        interval: 0,
+        rotate: categories.length > 3 ? 15 : 0,
+        width: 80,
+        overflow: 'truncate',
+        ellipsis: '...',
+      },
     },
     yAxis: {
       type: 'value',

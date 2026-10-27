@@ -25,11 +25,11 @@ export const FunnelOverview: React.FC<FunnelOverviewProps> = ({ funnel }) => {
       : undefined;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-2.5 sm:gap-3.5">
+    <div data-testid="funnel-overview" className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
       {/* 1. Total Entered */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 shadow-xs flex flex-col justify-between transition-colors">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 truncate">
+      <div data-testid="kpi-card" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 shadow-xs flex flex-col justify-between transition-colors min-h-[90px]">
+        <div className="flex items-center justify-between gap-1.5">
+          <span className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 break-words min-w-0">
             進入漏斗人數
           </span>
           <div className="p-1 sm:p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shrink-0">
@@ -40,16 +40,16 @@ export const FunnelOverview: React.FC<FunnelOverviewProps> = ({ funnel }) => {
           <p className="text-xl sm:text-2xl font-bold font-mono text-slate-900 dark:text-slate-100 tracking-tight m-0">
             {step0Count.toLocaleString()}
           </p>
-          <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate block mt-0.5">
+          <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 break-words block mt-0.5">
             佔整體 {funnel.totalUniqueUsersInput > 0 ? formatPercentage(step0Count / funnel.totalUniqueUsersInput) : '0%'}
           </span>
         </div>
       </div>
 
       {/* 2. Completed */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 shadow-xs flex flex-col justify-between transition-colors">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 truncate">
+      <div data-testid="kpi-card" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 shadow-xs flex flex-col justify-between transition-colors min-h-[90px]">
+        <div className="flex items-center justify-between gap-1.5">
+          <span className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 break-words min-w-0">
             完整通關人數
           </span>
           <div className="p-1 sm:p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
@@ -60,16 +60,16 @@ export const FunnelOverview: React.FC<FunnelOverviewProps> = ({ funnel }) => {
           <p className="text-xl sm:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 tracking-tight m-0">
             {completedCount.toLocaleString()}
           </p>
-          <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate block mt-0.5">
+          <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 break-words block mt-0.5">
             全程 {funnel.stepResults.length} 步無流失
           </span>
         </div>
       </div>
 
       {/* 3. Overall Conversion Rate */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 shadow-xs flex flex-col justify-between transition-colors">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 truncate">
+      <div data-testid="kpi-card" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 shadow-xs flex flex-col justify-between transition-colors min-h-[90px]">
+        <div className="flex items-center justify-between gap-1.5">
+          <span className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 break-words min-w-0">
             總體轉換率
           </span>
           <div className="p-1 sm:p-1.5 rounded-lg bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 shrink-0">
@@ -90,9 +90,9 @@ export const FunnelOverview: React.FC<FunnelOverviewProps> = ({ funnel }) => {
       </div>
 
       {/* 4. Median Time */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 shadow-xs flex flex-col justify-between transition-colors">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 truncate">
+      <div data-testid="kpi-card" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 shadow-xs flex flex-col justify-between transition-colors min-h-[90px]">
+        <div className="flex items-center justify-between gap-1.5">
+          <span className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 break-words min-w-0">
             中位數轉換耗時
           </span>
           <div className="p-1 sm:p-1.5 rounded-lg bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0">
@@ -103,16 +103,16 @@ export const FunnelOverview: React.FC<FunnelOverviewProps> = ({ funnel }) => {
           <p className="text-xl sm:text-2xl font-bold font-mono text-slate-900 dark:text-slate-100 tracking-tight m-0">
             {formatDuration(medianTime)}
           </p>
-          <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate block mt-0.5">
+          <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 break-words block mt-0.5">
             P50 通關完成速度
           </span>
         </div>
       </div>
 
       {/* 5. Biggest Bottleneck */}
-      <div className="col-span-2 md:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 shadow-xs flex flex-col justify-between transition-colors">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 truncate">
+      <div data-testid="kpi-card" className="col-span-1 min-[480px]:col-span-2 lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 shadow-xs flex flex-col justify-between transition-colors min-h-[90px]">
+        <div className="flex items-center justify-between gap-1.5">
+          <span className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 break-words min-w-0">
             最大流失瓶頸
           </span>
           <div className="p-1 sm:p-1.5 rounded-lg bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 shrink-0">
@@ -122,10 +122,10 @@ export const FunnelOverview: React.FC<FunnelOverviewProps> = ({ funnel }) => {
         <div className="mt-2">
           {bottleneckStep ? (
             <>
-              <p className="text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-400 truncate m-0">
+              <p className="text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-400 break-words m-0">
                 {bottleneckStep.stepName}
               </p>
-              <span className="text-[10px] sm:text-[11px] text-rose-600/80 dark:text-rose-300/80 truncate block mt-0.5 font-mono">
+              <span className="text-[10px] sm:text-[11px] text-rose-600/80 dark:text-rose-300/80 break-words block mt-0.5 font-mono">
                 流失率 {formatPercentage(bottleneckStep.dropOffRate)} ({bottleneckStep.dropOffCount} 人)
               </span>
             </>

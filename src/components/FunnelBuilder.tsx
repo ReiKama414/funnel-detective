@@ -278,9 +278,9 @@ export const FunnelBuilder: React.FC<FunnelBuilderProps> = ({
               key={step.id}
               className="bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-lg p-3 space-y-2.5 transition-colors"
             >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                 {/* Step badge & Order */}
-                <div className="flex items-center space-x-2 flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
                   <div className="w-5 h-5 rounded bg-indigo-100 dark:bg-indigo-600/30 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/40 flex items-center justify-center text-[11px] font-bold shrink-0">
                     {idx + 1}
                   </div>
@@ -290,10 +290,10 @@ export const FunnelBuilder: React.FC<FunnelBuilderProps> = ({
                     value={step.name}
                     onChange={(e) => handleUpdateStep(idx, { name: e.target.value })}
                     placeholder={`步驟 ${idx + 1} 名稱`}
-                    className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs font-medium text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 w-32 sm:w-44 shrink-0"
+                    className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded px-2 py-1 text-xs font-medium text-slate-900 dark:text-slate-100 focus:outline-none focus:border-indigo-500 w-full min-[380px]:w-36 sm:w-44 shrink-0"
                   />
 
-                  <div className="flex items-center space-x-1 flex-1 min-w-0">
+                  <div className="flex items-center space-x-1 flex-1 min-w-[130px]">
                     <span className="text-[11px] text-slate-500 dark:text-slate-400 shrink-0">事件:</span>
                     <select
                       value={step.eventName}

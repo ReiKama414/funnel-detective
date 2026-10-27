@@ -94,9 +94,9 @@ export const EChartsFunnel: React.FC<EChartsFunnelProps> = ({ funnel, onSelectSt
     },
     grid: {
       left: '2%',
-      right: '6%',
-      bottom: '6%',
-      top: '8%',
+      right: '4%',
+      bottom: '8%',
+      top: '6%',
       containLabel: true,
     },
     xAxis: {
@@ -108,7 +108,11 @@ export const EChartsFunnel: React.FC<EChartsFunnelProps> = ({ funnel, onSelectSt
         fontSize: 11,
         formatter: '{value} 人',
       },
-      max: baseCount > 0 ? Math.ceil(baseCount * 1.05) : undefined,
+      // Give 35% margin on the right so the right-positioned labels never clip or overflow
+      max: (val: any) => {
+        const peak = Math.max(val.max || 0, baseCount);
+        return peak > 0 ? Math.ceil(peak * 1.35) : undefined;
+      },
     },
     yAxis: {
       type: 'category',
@@ -119,6 +123,9 @@ export const EChartsFunnel: React.FC<EChartsFunnelProps> = ({ funnel, onSelectSt
         color: labelColor,
         fontSize: 11,
         fontWeight: 500,
+        width: 100,
+        overflow: 'truncate',
+        ellipsis: '...',
       },
     },
     series: [
@@ -164,7 +171,7 @@ export const EChartsFunnel: React.FC<EChartsFunnelProps> = ({ funnel, onSelectSt
     <div className="w-full overflow-hidden">
       <ReactECharts
         option={option}
-        style={{ height: `${Math.max(240, steps.length * 48)}px`, width: '100%' }}
+        style={{ height: `${Math.max(260, steps.length * 52)}px`, width: '100%' }}
         onEvents={{ click: onChartClick }}
         opts={{ renderer: 'svg' }}
       />

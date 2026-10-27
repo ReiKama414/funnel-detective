@@ -103,7 +103,7 @@ export const FunnelComparison: React.FC<FunnelComparisonProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Funnel A Card */}
           <div className="bg-slate-50 dark:bg-slate-950/70 border border-indigo-200 dark:border-indigo-500/30 rounded-lg p-3 sm:p-3.5 space-y-2">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-1.5">
               <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
                 基準漏斗 A
               </span>
@@ -111,10 +111,10 @@ export const FunnelComparison: React.FC<FunnelComparisonProps> = ({
                 窗口: {currentFunnel.config.conversionWindow.value} {currentFunnel.config.conversionWindow.unit}
               </span>
             </div>
-            <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate m-0">
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 break-words m-0">
               {currentFunnel.funnelName}
             </h3>
-            <div className="flex items-baseline space-x-3 pt-1">
+            <div className="flex flex-wrap items-baseline gap-3 pt-1">
               <div>
                 <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 block">總轉換率</span>
                 <span className="text-sm sm:text-base font-bold text-indigo-700 dark:text-indigo-300 font-mono">
@@ -138,7 +138,7 @@ export const FunnelComparison: React.FC<FunnelComparisonProps> = ({
 
           {/* Funnel B Card */}
           <div className="bg-slate-50 dark:bg-slate-950/70 border border-cyan-200 dark:border-cyan-500/30 rounded-lg p-3 sm:p-3.5 space-y-2">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-1.5">
               <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400">
                 對比漏斗 B
               </span>
@@ -146,10 +146,10 @@ export const FunnelComparison: React.FC<FunnelComparisonProps> = ({
                 窗口: {funnelB.config.conversionWindow.value} {funnelB.config.conversionWindow.unit}
               </span>
             </div>
-            <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate m-0">
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 break-words m-0">
               {funnelB.funnelName}
             </h3>
-            <div className="flex items-baseline space-x-3 pt-1">
+            <div className="flex flex-wrap items-baseline gap-3 pt-1">
               <div>
                 <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 block">總轉換率</span>
                 <span className="text-sm sm:text-base font-bold text-cyan-700 dark:text-cyan-300 font-mono">

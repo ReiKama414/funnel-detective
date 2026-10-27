@@ -82,15 +82,24 @@ export const FunnelChart: React.FC<FunnelChartProps> = ({
 
       {/* ECharts Funnel Visualization */}
       {(viewMode === 'both' || viewMode === 'chart') && (
-        <div className="bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl p-3">
-          <div className="flex items-center justify-between px-1.5 pb-2">
-            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center space-x-1.5">
-              <BarChart3 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-              <span>ECharts 階段留存量規</span>
+        <div className="bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 space-y-2">
+          <div data-testid="echarts-funnel-header" className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 px-1 pb-1">
+            <div>
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center space-x-1.5">
+                <BarChart3 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                <span>ECharts 階段留存量規</span>
+              </span>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 m-0 mt-0.5">
+                各步驟獨立留存人數與累計轉化率長條量規
+              </p>
+            </div>
+            <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-mono bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 self-start sm:self-center shrink-0">
+              單位：人 (留存 %)
             </span>
-            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">人 (留存 %)</span>
           </div>
-          <EChartsFunnel funnel={funnel} />
+          <div data-testid="echarts-funnel-chart">
+            <EChartsFunnel funnel={funnel} />
+          </div>
         </div>
       )}
 
@@ -138,32 +147,31 @@ export const FunnelChart: React.FC<FunnelChartProps> = ({
 
                 {/* Step Card */}
                 <div
-                  className={`p-3 sm:p-3.5 rounded-lg border transition relative overflow-hidden ${
+                  className={`p-3 sm:p-3.5 rounded-lg border transition ${
                     isBottleneck
                       ? 'bg-white dark:bg-slate-950 border-rose-300 dark:border-rose-500/50 shadow-xs'
                       : 'bg-white dark:bg-slate-950/70 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                   }`}
                 >
-                  {isBottleneck && (
-                    <div className="absolute top-0 right-0 bg-rose-50 dark:bg-rose-500/20 border-b border-l border-rose-200 dark:border-rose-500/30 px-2 py-0.2 rounded-bl text-[10px] font-bold text-rose-600 dark:text-rose-300 flex items-center space-x-1">
-                      <AlertTriangle className="w-3 h-3 text-rose-500" />
-                      <span>最大流失瓶頸</span>
-                    </div>
-                  )}
-
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                    <div className="flex items-center space-x-2 min-w-0">
-                      <div className="w-5 h-5 sm:w-6 sm:h-6 rounded bg-indigo-100 dark:bg-indigo-600/20 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30 flex items-center justify-center font-bold text-xs shrink-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2.5">
+                    <div className="flex items-start sm:items-center space-x-2 min-w-0 flex-1">
+                      <div className="w-5 h-5 sm:w-6 sm:h-6 rounded bg-indigo-100 dark:bg-indigo-600/20 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 sm:mt-0">
                         {idx + 1}
                       </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center space-x-1.5 flex-wrap">
-                          <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate m-0">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                          <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 break-words m-0">
                             {step.stepName}
                           </h3>
                           <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-cyan-700 dark:text-cyan-300 border border-slate-200 dark:border-slate-700 shrink-0">
                             {step.eventName}
                           </span>
+                          {isBottleneck && (
+                            <span className="bg-rose-50 dark:bg-rose-500/20 border border-rose-200 dark:border-rose-500/30 px-1.5 py-0.2 rounded text-[10px] font-bold text-rose-600 dark:text-rose-300 flex items-center space-x-1 shrink-0">
+                              <AlertTriangle className="w-3 h-3 text-rose-500" />
+                              <span>最大流失瓶頸</span>
+                            </span>
+                          )}
                         </div>
                         <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
                           {isFirst
