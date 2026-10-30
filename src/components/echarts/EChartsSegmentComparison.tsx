@@ -20,11 +20,11 @@ export const EChartsSegmentComparison: React.FC<EChartsSegmentComparisonProps> =
 
   const categories = steps.map((s) => s.stepName);
 
-  const textColor = isDark ? '#94a3b8' : '#64748b';
-  const borderColor = isDark ? '#334155' : '#e2e8f0';
-  const splitLineColor = isDark ? '#1e293b' : '#f1f5f9';
-  const tooltipBg = isDark ? '#0f172a' : '#ffffff';
-  const tooltipText = isDark ? '#f8fafc' : '#0f172a';
+  const textColor = isDark ? '#a1a1aa' : '#71717a';
+  const borderColor = isDark ? '#27272a' : '#e4e4e7';
+  const splitLineColor = isDark ? '#18181b' : '#f4f4f5';
+  const tooltipBg = isDark ? '#18181b' : '#ffffff';
+  const tooltipText = isDark ? '#f4f4f5' : '#09090b';
 
   const series = segments.map((seg, idx) => ({
     name: seg.segmentValue,

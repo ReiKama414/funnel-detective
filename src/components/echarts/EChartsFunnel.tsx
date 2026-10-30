@@ -20,12 +20,12 @@ export const EChartsFunnel: React.FC<EChartsFunnelProps> = ({ funnel, onSelectSt
   const userCounts = steps.map((s) => s.userCount);
   const conversionRates = steps.map((s) => Number(((s.conversionRateFromStart || 0) * 100).toFixed(1)));
 
-  const textColor = isDark ? '#94a3b8' : '#64748b';
-  const labelColor = isDark ? '#cbd5e1' : '#1e293b';
-  const borderColor = isDark ? '#334155' : '#e2e8f0';
-  const splitLineColor = isDark ? '#1e293b' : '#f1f5f9';
-  const tooltipBg = isDark ? '#0f172a' : '#ffffff';
-  const tooltipText = isDark ? '#f8fafc' : '#0f172a';
+  const textColor = isDark ? '#a1a1aa' : '#71717a';
+  const labelColor = isDark ? '#e4e4e7' : '#18181b';
+  const borderColor = isDark ? '#27272a' : '#e4e4e7';
+  const splitLineColor = isDark ? '#18181b' : '#f4f4f5';
+  const tooltipBg = isDark ? '#18181b' : '#ffffff';
+  const tooltipText = isDark ? '#f4f4f5' : '#09090b';
 
   const option = {
     backgroundColor: 'transparent',
@@ -139,7 +139,7 @@ export const EChartsFunnel: React.FC<EChartsFunnelProps> = ({ funnel, onSelectSt
           return {
             value: count,
             itemStyle: {
-              color: isBottleneck ? '#e11d48' : '#4f46e5',
+              color: isBottleneck ? '#e11d48' : (isDark ? '#e4e4e7' : '#18181b'),
               borderRadius: [0, 4, 4, 0],
             },
           };

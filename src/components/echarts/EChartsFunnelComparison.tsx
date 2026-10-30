@@ -14,11 +14,11 @@ export const EChartsFunnelComparison: React.FC<EChartsFunnelComparisonProps> = (
   const { funnelA, funnelB, diffs } = comparison;
   const categories = diffs.map((d) => d.stepName);
 
-  const textColor = isDark ? '#94a3b8' : '#64748b';
-  const borderColor = isDark ? '#334155' : '#e2e8f0';
-  const splitLineColor = isDark ? '#1e293b' : '#f1f5f9';
-  const tooltipBg = isDark ? '#0f172a' : '#ffffff';
-  const tooltipText = isDark ? '#f8fafc' : '#0f172a';
+  const textColor = isDark ? '#a1a1aa' : '#71717a';
+  const borderColor = isDark ? '#27272a' : '#e4e4e7';
+  const splitLineColor = isDark ? '#18181b' : '#f4f4f5';
+  const tooltipBg = isDark ? '#18181b' : '#ffffff';
+  const tooltipText = isDark ? '#f4f4f5' : '#09090b';
 
   const series = [
     {
@@ -27,7 +27,7 @@ export const EChartsFunnelComparison: React.FC<EChartsFunnelComparisonProps> = (
       barGap: '20%',
       data: diffs.map((d) => Number((d.funnelAConversionRate * 100).toFixed(1))),
       itemStyle: {
-        color: '#4f46e5',
+        color: isDark ? '#71717a' : '#a1a1aa',
         borderRadius: [3, 3, 0, 0],
       },
     },
@@ -36,7 +36,7 @@ export const EChartsFunnelComparison: React.FC<EChartsFunnelComparisonProps> = (
       type: 'bar',
       data: diffs.map((d) => Number((d.funnelBConversionRate * 100).toFixed(1))),
       itemStyle: {
-        color: '#0284c7',
+        color: isDark ? '#f4f4f5' : '#18181b',
         borderRadius: [3, 3, 0, 0],
       },
     },

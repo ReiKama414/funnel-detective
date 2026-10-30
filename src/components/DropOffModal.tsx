@@ -61,10 +61,10 @@ export const DropOffModal: React.FC<DropOffModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 dark:bg-slate-950/80 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl w-[calc(100vw-1.5rem)] sm:w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden transition-colors">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-zinc-950/60 dark:bg-zinc-950/80 backdrop-blur-xs overflow-y-auto">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl w-[calc(100vw-1.5rem)] sm:w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden transition-colors">
         {/* Modal Header */}
-        <div className="px-4 sm:px-5 py-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-950/40">
+        <div className="px-4 sm:px-5 py-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50 dark:bg-zinc-950/40">
           <div className="flex items-center space-x-2.5 min-w-0">
             <div
               className={`p-1.5 rounded-lg shrink-0 ${
@@ -76,10 +76,10 @@ export const DropOffModal: React.FC<DropOffModalProps> = ({
               {isDropped ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
             </div>
             <div className="min-w-0">
-              <h2 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate m-0">
+              <h2 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate m-0">
                 {isDropped ? '流失用戶名單' : '抵達用戶名單'}：{step.stepName}
               </h2>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 m-0">
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 m-0">
                 共 {userIds.length.toLocaleString()} 位獨立匿名使用者
               </p>
             </div>
@@ -87,7 +87,7 @@ export const DropOffModal: React.FC<DropOffModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition shrink-0"
+            className="p-1 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
@@ -98,13 +98,13 @@ export const DropOffModal: React.FC<DropOffModalProps> = ({
           {/* Controls: Search + Export Button */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div className="relative flex-1 min-w-0">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2" />
+              <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 top-2" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="搜尋 User ID..."
-                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded pl-8 pr-2.5 py-1 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded pl-8 pr-2.5 py-1 text-xs text-zinc-900 dark:text-zinc-200 focus:outline-none focus:border-zinc-500"
               />
             </div>
 
@@ -118,7 +118,7 @@ export const DropOffModal: React.FC<DropOffModalProps> = ({
 
               <button
                 onClick={handleExport}
-                className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs font-medium flex items-center space-x-1.5 transition"
+                className="px-3 py-1 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded text-xs font-medium flex items-center space-x-1.5 transition"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>匯出名單 CSV</span>
@@ -127,20 +127,20 @@ export const DropOffModal: React.FC<DropOffModalProps> = ({
           </div>
 
           {/* User ID List Table */}
-          <div className="rounded border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-50 dark:bg-slate-950/60 max-h-80 overflow-y-auto">
+          <div className="rounded border border-zinc-200 dark:border-zinc-800 overflow-hidden bg-zinc-50 dark:bg-zinc-950/60 max-h-80 overflow-y-auto">
             <table className="w-full text-left text-xs font-mono">
-              <thead className="bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 sticky top-0 border-b border-slate-200 dark:border-slate-800 font-medium">
+              <thead className="bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 sticky top-0 border-b border-zinc-200 dark:border-zinc-800 font-medium">
                 <tr>
                   <th className="px-3 sm:px-4 py-1.5">序號</th>
                   <th className="px-3 sm:px-4 py-1.5">User ID</th>
                   <th className="px-3 sm:px-4 py-1.5 text-right">狀態</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-850">
+              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
                 {filteredUserIds.slice(0, 100).map((uid, index) => (
-                  <tr key={uid} className="hover:bg-slate-100/60 dark:hover:bg-slate-900/50">
-                    <td className="px-3 sm:px-4 py-1.5 text-slate-400">{index + 1}</td>
-                    <td className="px-3 sm:px-4 py-1.5 font-medium text-slate-800 dark:text-slate-200 truncate max-w-[200px]">{uid}</td>
+                  <tr key={uid} className="hover:bg-zinc-100/60 dark:hover:bg-zinc-900/50">
+                    <td className="px-3 sm:px-4 py-1.5 text-zinc-400">{index + 1}</td>
+                    <td className="px-3 sm:px-4 py-1.5 font-medium text-zinc-800 dark:text-zinc-200 truncate max-w-[200px]">{uid}</td>
                     <td className="px-3 sm:px-4 py-1.5 text-right">
                       <span
                         className={`px-1.5 py-0.2 rounded text-[10px] font-semibold ${
@@ -156,7 +156,7 @@ export const DropOffModal: React.FC<DropOffModalProps> = ({
                 ))}
                 {filteredUserIds.length === 0 && (
                   <tr>
-                    <td colSpan={3} className="px-4 py-6 text-center text-slate-500">
+                    <td colSpan={3} className="px-4 py-6 text-center text-zinc-500">
                       查無符合「{searchQuery}」的用戶
                     </td>
                   </tr>
@@ -166,17 +166,17 @@ export const DropOffModal: React.FC<DropOffModalProps> = ({
           </div>
 
           {filteredUserIds.length > 100 && (
-            <p className="text-center text-[11px] text-slate-500 dark:text-slate-400 m-0">
+            <p className="text-center text-[11px] text-zinc-500 dark:text-zinc-400 m-0">
               顯示前 100 筆，其餘可透過上方「匯出名單 CSV」下載完整名單。
             </p>
           )}
         </div>
 
         {/* Modal Footer */}
-        <div className="px-4 sm:px-5 py-2.5 border-t border-slate-200 dark:border-slate-800 flex justify-end bg-slate-50 dark:bg-slate-950/40">
+        <div className="px-4 sm:px-5 py-2.5 border-t border-zinc-200 dark:border-zinc-800 flex justify-end bg-zinc-50 dark:bg-zinc-950/40">
           <button
             onClick={onClose}
-            className="px-3 py-1 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="px-3 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
           >
             關閉
           </button>

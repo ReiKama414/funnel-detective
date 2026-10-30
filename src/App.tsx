@@ -13,6 +13,7 @@ import { DetectiveInsights } from './components/DetectiveInsights';
 import { DataIngestionModal } from './components/DataIngestionModal';
 import { DropOffModal } from './components/DropOffModal';
 import { SavedFunnelsModal } from './components/SavedFunnelsModal';
+import { StatusBar } from './components/StatusBar';
 import {
   getAllSavedFunnels,
   getAllCohorts,
@@ -195,7 +196,7 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors selection:bg-indigo-500/20 selection:text-indigo-800 dark:selection:text-indigo-200">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col font-sans transition-colors selection:bg-zinc-500/20 selection:text-zinc-800 dark:selection:text-zinc-200">
       {/* Header */}
       <Header
         currentDataset={currentDataset}
@@ -211,7 +212,7 @@ export function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-5 space-y-4 sm:space-y-5">
+      <main className="flex-1 max-w-[1700px] w-full mx-auto px-3 sm:px-4 py-4 sm:py-5 space-y-4 sm:space-y-5 min-w-0">
         {/* KPI Overview Bar */}
         <FunnelOverview funnel={funnelResult} />
 
@@ -261,16 +262,24 @@ export function App() {
         )}
       </main>
 
+      {/* Sticky Bottom Status Bar */}
+      <StatusBar
+        totalEventsCount={events.length}
+        uniqueUsersCount={uniqueUsersCount}
+        funnelResult={funnelResult}
+        datasetName={currentDataset ? currentDataset.name : '自訂匯入資料'}
+      />
+
       {/* Enterprise Workbench Footer */}
-      <footer className="border-t border-slate-200 dark:border-slate-800 py-4 bg-white dark:bg-slate-950 text-xs text-slate-500 dark:text-slate-400 transition-colors">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+      <footer className="border-t border-zinc-200 dark:border-zinc-800 py-3 bg-white dark:bg-zinc-950 text-xs text-zinc-500 dark:text-zinc-400 transition-colors">
+        <div className="max-w-[1700px] mx-auto px-3 sm:px-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
           <div className="flex items-center space-x-2">
-            <span className="font-semibold text-slate-800 dark:text-slate-300">Funnel Detective</span>
+            <span className="font-semibold text-zinc-800 dark:text-zinc-300">Funnel Detective</span>
             <span>•</span>
             <span>事件轉換分析工作台</span>
           </div>
-          <div className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-mono">
-            ECharts • IndexedDB • 黑白雙主題 • 嚴格防重算
+          <div className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-mono">
+            ECharts · IndexedDB · 黑白雙主題 · 嚴格防重算
           </div>
         </div>
       </footer>

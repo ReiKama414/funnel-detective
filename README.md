@@ -1,192 +1,175 @@
 # Funnel Detective
 
-> **事件轉換分析與流失偵測工作台**，基於 React 19 與 TypeScript 開發之離線優先分析平台
+[繁體中文](README.zh-TW.md) · **English**
+
+> **Pure Frontend Interactive Event Conversion Funnel Studio**, 100% in-browser sandbox computation with strict deduplication and zero server data transfer.
+
+<p align="center">
+  <img src="docs/preview.png" alt="Funnel Detective Studio Preview" width="880" />
+</p>
 
 <p align="center">
   <a href="https://github.com/ReiKama414/funnel-detective">GitHub</a> ·
-  <a href="https://reikama414.vercel.app/">個人網站</a> ·
-  <a href="#快速開始">快速開始</a> ·
-  <a href="#核心特色">核心特色</a> ·
-  <a href="#測試驗證">測試驗證</a> ·
-  <a href="#license--權限">授權</a>
+  <a href="https://reikama414.vercel.app/">Portfolio</a> ·
+  <a href="#key-highlights">Highlights</a> ·
+  <a href="#getting-started">Getting Started</a> ·
+  <a href="#testing--validation">Validation</a> ·
+  <a href="#license">License</a>
 </p>
 
 ---
 
-## 核心特色
+## Key Highlights
 
-- **嚴格防重算計量核心** — 依循單一使用者不重複計量原則，維護嚴格單調時間序列與時間窗邊界
-- **完整時間分佈直方圖** — 提供 P50、P75、P90、P95、平均值及耗時區間分組直方圖，辨別決策長尾
-- **多維度屬性分群比較** — 支援依裝置、管道、地區等維度自動拆解漏斗，快速識別表現最優客群
-- **平行多漏斗差異對照** — 橫向比對不同窗口大小、客群篩選條件或去重模式，產出指標變化與洞察摘要
-- **受眾名單調閱與匯出** — 點擊各步驟節點即時調閱流失名單，真實現地匯出 CSV 與 JSON
-- **瀏覽器原生資料庫** — 內建 IndexedDB 儲存引擎，免登入即可離線保存自訂資料集與歷史漏斗配置
-- **黑白雙主題工作台** — 支援 System、Light、Dark 模式，符合全域零重疊 Document Flow 規範
-
----
-
-## 技術棧
-
-| 領域 | 技術與版本 | 說明 |
-| --- | --- | --- |
-| 前端框架 | React 19 · React DOM 19 | 核心應用介面建構與狀態管理 |
-| 程式語言 | TypeScript 6 | 全面靜態型別與資料模型定義 |
-| 建置工具 | Vite 8 | 高效開發伺服器與生產環境打包 |
-| 樣式系統 | Tailwind CSS 4 | 專業工作台設計規範，支援黑白雙主題切換 |
-| 圖表引擎 | Apache ECharts 6 · echarts-for-react | 自適應階段留存量規、時間直方圖與分群長條圖 |
-| 資料持久化 | IndexedDB · idb | 離線保存自訂資料集、漏斗設定與歷史名單 |
-| 資料解析 | PapaParse | CSV 格式解析、時間戳格式識別與異常略過判定 |
-| 單元測試 | Vitest | 核心計量演算法、分位數計算與去重邏輯測試 |
-| E2E 測試 | Playwright | 覆蓋 9 種 Viewport、零重疊排版與核心旅程測試 |
+- **Pure In-Browser Sandbox Computation** — All event parsing, sequential path matching, window boundary checks, and conversion metric computations execute entirely on the client side with zero server dependencies or network transmission.
+- **Strict Deduplication Architecture** — Mathematical set guarantees ensure each unique user is counted at most once per funnel step, eliminating counting inflation from duplicate clicks or repeated visits.
+- **Monotonic Sequence & Window Boundaries** — Enforces strictly non-decreasing timestamps ($T_1 \le T_2 \le \dots \le T_k$) across steps, supporting both total window (from origin) and step-to-step interval modes.
+- **Full Completion Time Distribution** — Precise R-7 linear interpolation percentiles (P50, P75, P90, P95) and Freedman-Diaconis adaptive binning histogram to distinguish fast conversions from long-tail hesitation.
+- **Multi-Dimensional Property Segmentation** — Dissect funnels across dimensions such as device type, traffic source, or geographic region, with automated champion segment identification.
+- **Multi-Funnel Parallel Comparison** — Side-by-side contrast of conversion performance under different time windows (e.g., 24 hours vs. 7 days), filter conditions, or deduplication rules, complete with delta ($\Delta$) metrics and diagnostic notes.
+- **Automated Detective Diagnostics** — Built-in heuristic engine automatically flags critical drop-off choke points and transition latency bottlenecks with actionable optimization recommendations.
+- **Audience Cohort Inspection & Export** — One-click inspection of dropped or converted user ID cohorts with instant CSV downloads, JSON analytical report exports, and chart PNG generation.
+- **Responsive Design & Dual Theme** — Support for System, Light, and Dark modes across 9 distinct viewports (320px to 1920px), engineered with a strict Zero-Overlap Document Flow layout.
+- **IndexedDB Offline Persistence** — Browser-native storage engine automatically persists custom datasets, configured funnels, and exported cohorts, enabling seamless continuation across browser restarts.
 
 ---
 
-## 快速開始
+## Built-in Datasets
 
-### 環境需求
+The studio comes preloaded with three real-world datasets, while also supporting custom CSV and JSON drag-and-drop ingestion:
 
-需要 Node.js **20 LTS 或更新版本**，以及現代網路瀏覽器
+| Dataset Name | Specs | Key Attributes | Analytical Focus |
+| :--- | :--- | :--- | :--- |
+| E-Commerce Checkout Funnel | 850 events · 310 users | Page View, View Item, Add to Cart, Initiate Checkout, Purchase · Device, Country, Amount | Choke point between Cart and Checkout, mobile checkout drop-off, high-value cart hesitation |
+| SaaS User Onboarding & Activation | 620 events · 240 users | Sign Up, Verify Email, Create Project, Invite Team, Upgrade Plan · Plan Tier, Referrer | Team invite bottleneck, trial-to-paid median latency, enterprise onboarding efficiency |
+| Mobile App Trial & Subscription | 540 events · 190 users | Install, Open App, Complete Tutorial, Enable Push, Subscribe · OS, Acquisition Channel | Tutorial abandon rate, push notification opt-in lift, organic vs. paid acquisition retention |
 
-### 安裝與啟動
+---
+
+## Mathematical Precision Guarantees
+
+Every analytical algorithm is verified via independent unit tests (100% pass rate) to guarantee mathematical consistency with raw source events:
+
+- **Strict Deduplication Cohort Set**:
+  $$\text{UserCohort}_k = \{ u \in \mathcal{U} \mid \exists (e_1, \dots, e_k) \text{ satisfying } T_1 \le T_2 \le \dots \le T_k \land \Delta T \le W \}$$
+- **Overall Conversion Rate from Start**:
+  $$CR_{1 \to k} = \frac{|\text{UserCohort}_k|}{|\text{UserCohort}_1|} \times 100\% \quad (|\text{UserCohort}_1| > 0)$$
+- **Step-to-Step Conversion Rate**:
+  $$CR_{k-1 \to k} = \frac{|\text{UserCohort}_k|}{|\text{UserCohort}_{k-1}|} \times 100\%$$
+- **Drop-off Rate & Count**:
+  $$\text{DropCount}_k = |\text{UserCohort}_{k-1}| - |\text{UserCohort}_k|, \quad DR_k = \frac{\text{DropCount}_k}{|\text{UserCohort}_{k-1}|} \times 100\%$$
+- **Conversion Window Constraints**:
+  - From First Step: $T_k - T_1 \le W$
+  - Step-to-Step Interval: $T_i - T_{i-1} \le W \quad (\forall i \in [2, k])$
+- **Quantiles**: Implemented via the standard R-7 linear interpolation method, ensuring $P50 \equiv \text{Median}$:
+  $$Q(p) = x_{\lfloor h \rfloor} + (h - \lfloor h \rfloor)(x_{\lceil h \rceil} - x_{\lfloor h \rfloor}), \quad h = (n - 1)p + 1$$
+- **Freedman-Diaconis Adaptive Binning**:
+  $$h = 2 \cdot \text{IQR} \cdot n^{-1/3}, \quad k = \left\lceil \frac{\max(T) - \min(T)}{h} \right\rceil$$
+
+---
+
+## Tech Stack
+
+| Layer | Technology | Purpose |
+| :--- | :--- | :--- |
+| Frontend Framework | React 19 · TypeScript | Component modularity and strict type-safety guarantees |
+| Build Tool | Vite | Ultra-fast local development server and optimized Rollup production bundling |
+| Styling & Theme | Tailwind CSS | High-density workbench aesthetic with unified dark/light design tokens |
+| Data Visualization | Apache ECharts | Responsive charts, containLabel layout isolation, and 2x PNG rendering |
+| Local Persistence | Native IndexedDB (`idb`) | Multi-dataset persistence, saved funnels, and exported cohort storage |
+| Data Ingestion | PapaParse | High-performance RFC-4180 streaming CSV parser with timestamp auto-mapping |
+| UI Iconography | Lucide Icons | Minimal, pixel-crisp geometric vector icons |
+| Automated Testing | Playwright · Vitest | E2E user flows, 9-viewport RWD, theme switching, and statistical precision tests |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+Node.js 20+ and npm.
+
+### Installation & Development
 
 ```bash
-# 1. 安裝相依套件
+# 1. Install dependencies
 npm install
 
-# 2. 啟動本機開發伺服器
+# 2. Start local development server
 npm run dev
 ```
 
-啟動後在瀏覽器開啟終端顯示的本機網址（預設為 `http://localhost:5173`）
+Open the printed local URL (default: `http://localhost:5173`) in your browser.
 
-### 正式建置與預覽
+### Production Build & Preview
 
 ```bash
-# 靜態代碼規範檢查
-npm run lint
-
-# TypeScript 編譯與正式打包
+# Execute TypeScript checking and production bundle
 npm run build
 
-# 本機生產環境預覽
+# Preview production build locally
 npm run preview
 ```
 
 ---
 
-## 核心操作
+## User Workflow
 
-| 模組 | 主要功能 | 操作方式 |
-| --- | --- | --- |
-| 內建資料集 | 提供電商結帳、SaaS 啟用、App 試用三套情境 | 透過頂部導覽列下拉選單快速切換 |
-| 步驟配置 | 自訂漏斗步驟名稱、目標事件、上下順序與篩選條件 | 於步驟編輯區新增、刪除或拖曳順序 |
-| 窗口與去重 | 設定時限（分鐘、小時、天）與去重規則 | 展開「時間窗與去重設定」，調整窗口與計算模式 |
-| 時間分佈 | 檢視完成時間分位數指標與直方圖 | 切換至「完成時間分布」頁籤調閱 |
-| 屬性分群 | 檢視各客群轉化率長條圖與指標詳表 | 切換至「屬性分群比較」頁籤，選擇分群欄位 |
-| 雙漏斗對比 | 平行比較兩組漏斗配置之轉化率差值 ($\Delta$) | 切換至「多漏斗對比」頁籤，選取比對情境 |
-| 智慧偵探報告 | 演算法自動巡檢流失斷點與滯留瓶頸 | 切換至「偵探洞察報告」頁籤調閱改善建議 |
-| 名單調閱與匯出 | 下載流失名單 CSV、指標 CSV 或完整分析 JSON | 點擊步驟間「查看流失名單」或頂部「匯出」按鈕 |
-| 本地資料庫 | 保存自訂漏斗設定與受眾群組快照 | 點擊頂部「已存漏斗」，命名後存入 IndexedDB |
+1. **Dataset Loading**: Click the dataset switcher in the top bar to choose between 3 preloaded datasets, drag-and-drop custom CSV/JSON files, or paste clipboard contents.
+2. **Funnel Sequence Configuration**: Add, reorder, or remove steps, customize step display names, and specify optional property filter conditions per step.
+3. **Conversion Window & Deduplication**: Tune the conversion time window (minutes, hours, days) and choose between First Touch (strict deduplication) or Best Touch modes.
+4. **Retention Visualization**: Inspect stage-by-stage user retention gauges and conversion rates in the "漏斗主分析" (Main Funnel) view.
+5. **Time Distribution Exploration**: Switch to "完成時間分布" (Time Distribution) to inspect P50, P75, P90, and P95 percentiles, duration histograms, and transition latencies.
+6. **Property Segmentation**: Select target dimensions (e.g., device, country) in "屬性分群比較" to review grouped retention charts, champion segment cards, and comparative tables.
+7. **Parallel Funnel Comparison**: Contrast conversion curves across different time windows or customer segments in "多漏斗對比" with automated delta ($\Delta$) summaries.
+8. **Cohort Inspection & Export**: Click "查看流失名單" on any transition step to browse user IDs, download cohort CSVs, or export metric CSVs and JSON reports from the header.
 
 ---
 
-## 資料與隱私
+## Testing & Validation
 
-- **純前端運算** — 所有 CSV / JSON 解析、去重運算與指標產出皆在使用者瀏覽器內部執行，資料不會上傳至任何遠端伺服器
-- **本地持久化儲存** — 自訂資料集與歷史漏斗存於瀏覽器原生的 IndexedDB，關閉視窗後仍會保留
-- **資料保護提醒** — 使用「無痕模式」或主動「清除瀏覽器資料」將使本地儲存內容抹除，請定期使用頂部「匯出完整 JSON」備份
-- **匯入異常處理機制** — 內建空檔案判定、時間戳格式相容驗證與損毀列自動排除機制，單次匯入安全防護上限為 50,000 列
-
----
-
-## 測試驗證
-
-本專案遵循嚴格的自動化驗收規範，包含單元測試、E2E 測試與無跑版檢驗
-
-### 執行單元測試 (Vitest)
+The project undergoes automated validation covering math accuracy and browser workflows (41 automated tests):
 
 ```bash
+# Run statistical accuracy unit tests
 npm test
-```
 
-驗證有序時序判定、單一使用者防重複計算、轉換時間窗過濾、分位數（P50/P75/P90/P95）及直方圖分組
-
-### 執行端到端測試 (Playwright E2E)
-
-```bash
-# 正式打包後執行 E2E 測試
-npm run build
+# Run full Playwright browser suite
 npm run test:e2e
 ```
 
-E2E 測試套件共計 **41 項測試全部通過**，涵蓋範圍：
+Validation Checklist:
 
-1. **零重疊與排版完整性** (`e2e/zero_overlap.spec.ts`)：驗證所有標題、統計數值與圖表嚴格依照 Document Flow 排列，無非預期 Absolute 覆蓋，在 200% 縮放時文字與元件自然伸展
-2. **9 種 Viewport 響應式檢驗** (`e2e/rwd_theme.spec.ts`)：在 `320px`、`375px`、`390px`、`430px`、`768px`、`1024px`、`1280px`、`1440px`、`1920px` 下，分別驗證淺色與深色模式均無水平溢出
-3. **核心功能流程驗證** (`e2e/funnel.spec.ts`)：驗證即時動態計算、分頁切換、流失名單調閱、自訂 CSV 匯入與 IndexedDB 本地保存流程
-
----
-
-## 靜態部署
-
-本專案為純前端單頁應用程式（SPA），已附帶針對 Vercel 之設定檔 [`vercel.json`](./vercel.json)
-
-### Vercel 部署
-
-1. 將程式庫推送至個人 GitHub
-2. 於 Vercel 儀表板匯入該 Repository
-3. 建置設定選擇 Vite（Build Command：`npm run build`，Output Directory：`dist`）
-4. 完成部署
+- **Mathematical Precision**: Strict user deduplication, monotonic step ordering, conversion window filtering, R-7 percentiles, and Freedman-Diaconis binning verified to 100% numerical accuracy.
+- **Interactive Workflows**: Step editing, tab switching, cohort modal inspection, custom CSV parsing, and IndexedDB persistence.
+- **RWD Verification**: Zero horizontal page overflow verified across 320px, 375px, 390px, 430px, 768px, 1024px, 1280px, 1440px, and 1920px viewports.
+- **Dual Theme Support**: System preference detection, light/dark mode toggling, and localStorage persistence.
+- **Zero-Overlap Architecture**: Non-intersecting bounding box verification between titles, statistics, chart canvases, and legends under 100% and 200% zoom levels.
 
 ---
 
-## 目錄結構
+## Known Limitations
 
-```text
-funnel-detective/
-├── e2e/                       # Playwright 端到端測試套件
-│   ├── funnel.spec.ts         # 核心互動流程測試
-│   ├── rwd_theme.spec.ts      # 9 種 Viewport 與黑白主題測試
-│   └── zero_overlap.spec.ts   # 零重疊與排版完整性測試
-├── src/
-│   ├── components/            # 介面元件（工作台、分頁、彈窗）
-│   │   └── echarts/           # ECharts 視覺化圖表封裝
-│   ├── context/               # 雙主題狀態管理 Context
-│   ├── data/                  # 內建範例資料集（電商、SaaS、App）
-│   ├── engine/                # 漏斗計算核心、對比器與偵探分析器
-│   ├── services/              # IndexedDB 本地資料庫服務
-│   ├── tests/                 # Vitest 單元測試
-│   ├── types/                 # TypeScript 資料模型定義
-│   └── utils/                 # 資料解析、統計計算與匯出公用函式
-├── package.json               # 專案配置與腳本
-├── playwright.config.ts       # Playwright 測試組態
-├── vercel.json                # Vercel 路由重寫設定
-├── LICENSE                    # 版權聲明全文
-└── README.md                  # 專案說明文件
-```
+> **Note:**
+> 1. All calculations execute on the browser's single thread; datasets under 50,000 rows or 20MB are recommended for optimal 60fps interaction.
+> 2. Offline storage relies on the browser's IndexedDB storage quota. Incognito sessions will clear persisted datasets upon closing the window.
+> 3. Uploaded CSVs should be UTF-8 encoded; please convert legacy Big5 CSVs before loading.
 
 ---
 
-## 已知限制
-
-- **瀏覽器記憶體負載** — 為保護隱私採全前端本地計算，單次匯入建議在 50,000 列以內以維持流暢體驗
-- **儲存作用域限制** — IndexedDB 依附於特定瀏覽器設定檔，跨裝置使用請透過 JSON 匯出備份檔案
-- **首步屬性歸因** — 屬性分群目前以使用者在該次旅程起點步驟所記錄之屬性為基準
-
----
-
-## License / 權限
+## License
 
 Copyright (c) 2026 ReiKama414. All rights reserved.
 
-本專案僅供個人瀏覽與學習。未經著作權人書面同意，不得使用、複製、修改、散布或併入其他專案（含非商業用途）
+This software and its source code are provided solely for personal viewing and learning purposes.
+No permission is granted to use, copy, modify, distribute, sublicense, or incorporate this software
+or any part of it into other projects, whether for commercial or non-commercial purposes,
+without the express written consent of the copyright holder.
 
 - [GitHub](https://github.com/ReiKama414/funnel-detective)
-- [個人網站](https://reikama414.vercel.app/)
-- [授權全文](./LICENSE)
+- [Portfolio](https://reikama414.vercel.app/)
+- [Full License](./LICENSE)
 
 ---
 
-<p align="center">
-  <sub>Funnel Detective · 事件轉換分析工作台</sub>
-</p>
+<sub>Funnel Detective · Pure Frontend Interactive Event Conversion Funnel Studio · ReiKama414</sub>

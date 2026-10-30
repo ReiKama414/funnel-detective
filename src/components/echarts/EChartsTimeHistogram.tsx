@@ -18,12 +18,12 @@ export const EChartsTimeHistogram: React.FC<EChartsTimeHistogramProps> = ({
   const xLabels = bins.map((b) => b.bucketLabel);
   const counts = bins.map((b) => b.count);
 
-  const textColor = isDark ? '#94a3b8' : '#64748b';
-  const labelColor = isDark ? '#cbd5e1' : '#1e293b';
-  const borderColor = isDark ? '#334155' : '#e2e8f0';
-  const splitLineColor = isDark ? '#1e293b' : '#f1f5f9';
-  const tooltipBg = isDark ? '#0f172a' : '#ffffff';
-  const tooltipText = isDark ? '#f8fafc' : '#0f172a';
+  const textColor = isDark ? '#a1a1aa' : '#71717a';
+  const labelColor = isDark ? '#e4e4e7' : '#18181b';
+  const borderColor = isDark ? '#27272a' : '#e4e4e7';
+  const splitLineColor = isDark ? '#18181b' : '#f4f4f5';
+  const tooltipBg = isDark ? '#18181b' : '#ffffff';
+  const tooltipText = isDark ? '#f4f4f5' : '#09090b';
 
   const option = {
     backgroundColor: 'transparent',
@@ -94,7 +94,7 @@ export const EChartsTimeHistogram: React.FC<EChartsTimeHistogramProps> = ({
         barWidth: '40%',
         data: counts,
         itemStyle: {
-          color: '#4f46e5',
+          color: isDark ? '#e4e4e7' : '#18181b',
           borderRadius: [4, 4, 0, 0],
         },
         label: {
