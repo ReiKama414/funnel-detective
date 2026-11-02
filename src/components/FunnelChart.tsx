@@ -35,7 +35,7 @@ export const FunnelChart: React.FC<FunnelChartProps> = ({
 
   return (
     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 sm:p-5 shadow-xs space-y-4 sm:space-y-5 transition-colors">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800 gap-2">
+      <div className="card-section-head border-b border-zinc-200 dark:border-zinc-800 gap-2 min-w-0">
         <div>
           <h2 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide m-0">
             有序漏斗轉換與流失路徑
@@ -83,7 +83,7 @@ export const FunnelChart: React.FC<FunnelChartProps> = ({
       {/* ECharts Funnel Visualization */}
       {(viewMode === 'both' || viewMode === 'chart') && (
         <div className="bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 sm:p-4 space-y-2">
-          <div data-testid="echarts-funnel-header" className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 px-1 pb-1">
+          <div data-testid="echarts-funnel-header" className="card-section-head gap-1.5 px-1 pb-1 min-w-0">
             <div>
               <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 flex items-center space-x-1.5">
                 <BarChart3 className="w-3.5 h-3.5 text-zinc-900 dark:text-zinc-100" />
