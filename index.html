@@ -1,13 +1,28 @@
 <!doctype html>
-<html lang="zh-TW" class="dark">
+<html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔍</text></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Funnel Detective - 事件轉換分析與流失偵測平台</title>
     <meta name="description" content="Funnel Detective 事件轉換分析平台：支援有序漏斗建立、轉換時間窗、精確去重防重算、屬性分群、完成時間分佈、多漏斗對比與名單匯出。" />
+    <script>
+      // Apply the saved / system theme before first paint to avoid a theme flash
+      (function () {
+        try {
+          var saved = localStorage.getItem('funnel_detective_theme');
+          var mode = saved === 'light' || saved === 'dark' ? saved : 'system';
+          var dark =
+            mode === 'dark' ||
+            (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          var root = document.documentElement;
+          root.classList.add(dark ? 'dark' : 'light');
+          root.style.colorScheme = dark ? 'dark' : 'light';
+        } catch (e) {}
+      })();
+    </script>
   </head>
-  <body class="bg-slate-950 text-slate-100 min-h-screen">
+  <body class="min-h-screen">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

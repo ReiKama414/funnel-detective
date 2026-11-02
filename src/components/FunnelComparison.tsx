@@ -22,11 +22,19 @@ export const FunnelComparison: React.FC<FunnelComparisonProps> = ({
     'window_variant' | 'device_variant' | 'dedup_variant'
   >('window_variant');
 
+  // The device scenario only makes sense when the dataset actually has a `device` property
+  const hasDeviceProperty = React.useMemo(
+    () => allEvents.some((e) => e.properties && 'device' in e.properties),
+    [allEvents]
+  );
+  const effectiveComparisonType =
+    comparisonType === 'device_variant' && !hasDeviceProperty ? 'window_variant' : comparisonType;
+
   // Build Funnel B configuration based on comparison type
   const funnelBConfig: FunnelConfig = React.useMemo(() => {
     const base = { ...currentFunnel.config };
 
-    if (comparisonType === 'window_variant') {
+    if (effectiveComparisonType === 'window_variant') {
       const currentVal = base.conversionWindow.value;
       const isHours = base.conversionWindow.unit === 'hours';
       const newVal = isHours && currentVal <= 24 ? 7 : 24;
@@ -42,7 +50,7 @@ export const FunnelComparison: React.FC<FunnelComparisonProps> = ({
           unit: newUnit,
         },
       };
-    } else if (comparisonType === 'device_variant') {
+    } else if (effectiveComparisonType === 'device_variant') {
       return {
         ...base,
         id: 'funnel-b-device',
@@ -60,7 +68,7 @@ export const FunnelComparison: React.FC<FunnelComparisonProps> = ({
         deduplicationMode: 'unique_user_last_touch',
       };
     }
-  }, [currentFunnel.config, comparisonType]);
+  }, [currentFunnel.config, effectiveComparisonType]);
 
   const funnelB = React.useMemo(() => {
     return calculateFunnel(allEvents, funnelBConfig);
@@ -85,15 +93,21 @@ export const FunnelComparison: React.FC<FunnelComparisonProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center space-x-2 shrink-0">
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">對比情境：</span>
+          <div className="flex items-center space-x-2 min-w-0 sm:shrink-0">
+            <span className="text-xs text-zinc-500 dark:text-zinc-400 shrink-0">對比情境：</span>
             <select
-              value={comparisonType}
-              onChange={(e) => setComparisonType(e.target.value as any)}
-              className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded px-2.5 py-1 text-xs text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-zinc-500 font-medium"
+              value={effectiveComparisonType}
+              onChange={(e) =>
+                setComparisonType(
+                  e.target.value as 'window_variant' | 'device_variant' | 'dedup_variant'
+                )
+              }
+              className="min-w-0 flex-1 sm:flex-none max-w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded px-2.5 py-1 text-xs text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-zinc-500 font-medium"
             >
               <option value="window_variant">不同轉換時間窗 (長短窗口對比)</option>
-              <option value="device_variant">裝置群組篩選 (全體 vs 行動裝置)</option>
+              <option value="device_variant" disabled={!hasDeviceProperty}>
+                裝置群組篩選 (全體 vs 行動裝置){hasDeviceProperty ? '' : '：資料無 device 屬性'}
+              </option>
               <option value="dedup_variant">去重規則 (首次觸發 vs 最佳路徑)</option>
             </select>
           </div>

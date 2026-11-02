@@ -2,6 +2,7 @@ import React from 'react';
 import ReactECharts from 'echarts-for-react';
 import { FunnelComparisonResult } from '../../types/funnel';
 import { useTheme } from '../../context/useTheme';
+import { escapeHtml } from '../../utils/html';
 
 interface EChartsFunnelComparisonProps {
   comparison: FunnelComparisonResult;
@@ -57,11 +58,11 @@ export const EChartsFunnelComparison: React.FC<EChartsFunnelComparisonProps> = (
         const diff = diffs[idx];
         const isPos = diff.conversionRateDelta >= 0;
 
-        let res = `<div style="font-weight:700;margin-bottom:4px;color:${tooltipText};">${params[0].axisValue}</div>`;
+        let res = `<div style="font-weight:700;margin-bottom:4px;color:${tooltipText};">${escapeHtml(params[0].axisValue)}</div>`;
         for (const item of params) {
           res += `
             <div style="display:flex;justify-content:space-between;gap:12px;font-size:11px;margin-bottom:2px;">
-              <span style="color:${item.color};">${item.seriesName}:</span>
+              <span style="color:${item.color};">${escapeHtml(item.seriesName)}:</span>
               <span style="font-family:monospace;font-weight:600;color:${tooltipText};">${item.value}%</span>
             </div>
           `;

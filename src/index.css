@@ -69,6 +69,28 @@
   background: #52525b;
 }
 
+/* Lightweight fade-in used by `animate-in fade-in` (no tailwindcss-animate plugin installed) */
+@keyframes fd-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: fd-fade-in 150ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-in {
+    animation: none;
+  }
+}
+
 /* Prevent unwanted browser touch gestures from bouncing */
 html {
   touch-action: manipulation;

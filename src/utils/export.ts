@@ -14,6 +14,12 @@ export function downloadFile(filename: string, content: string, mimeType: string
   URL.revokeObjectURL(url);
 }
 
+/** Make a string safe to use as a download filename (strip path / reserved characters). */
+function toSafeFileName(name: string): string {
+  const cleaned = name.replace(/[\\/:*?"<>|\s]+/g, '_').replace(/^_+|_+$/g, '');
+  return cleaned || 'export';
+}
+
 export function exportFunnelMetricsCSV(result: FunnelResult) {
   const rows = result.stepResults.map((s, idx) => ({
     '步驟序號': idx + 1,
@@ -30,7 +36,7 @@ export function exportFunnelMetricsCSV(result: FunnelResult) {
   }));
 
   const csv = Papa.unparse(rows);
-  const safeName = result.funnelName.replace(/\s+/g, '_');
+  const safeName = toSafeFileName(result.funnelName);
   downloadFile(`${safeName}_funnel_metrics.csv`, '\uFEFF' + csv, 'text/csv;charset=utf-8;');
 }
 
@@ -42,8 +48,10 @@ export function exportUserCohortCSV(
   // Aggregate user summary for cohort
   const userMap = new Map<string, { eventCount: number; firstSeen: number; lastSeen: number; properties: Record<string, string | number | boolean> }>();
 
+  const userIdSet = new Set(userIds);
+
   for (const e of allEvents) {
-    if (!userIds.includes(e.userId)) continue;
+    if (!userIdSet.has(e.userId)) continue;
     const existing = userMap.get(e.userId);
     if (!existing) {
       userMap.set(e.userId, {
@@ -78,13 +86,14 @@ export function exportUserCohortCSV(
     return row;
   });
 
-  const csv = Papa.unparse(rows);
-  const safeName = cohortName.replace(/\s+/g, '_');
+  // escapeFormulae guards against CSV/Excel formula injection from imported values
+  const csv = Papa.unparse(rows, { escapeFormulae: true });
+  const safeName = toSafeFileName(cohortName);
   downloadFile(`${safeName}_users_${Date.now()}.csv`, '\uFEFF' + csv, 'text/csv;charset=utf-8;');
 }
 
 export function exportFunnelJSON(result: FunnelResult) {
   const json = JSON.stringify(result, null, 2);
-  const safeName = result.funnelName.replace(/\s+/g, '_');
+  const safeName = toSafeFileName(result.funnelName);
   downloadFile(`${safeName}_report.json`, json, 'application/json');
 }

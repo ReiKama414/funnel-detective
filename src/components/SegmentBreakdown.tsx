@@ -10,14 +10,7 @@ interface SegmentBreakdownProps {
   availableProperties: string[];
 }
 
-const SEGMENT_COLORS = [
-  '#18181b',
-  '#71717a',
-  '#059669',
-  '#d97706',
-  '#dc2626',
-  '#7c3aed',
-];
+import { SEGMENT_COLORS } from '../utils/chartColors';
 
 export const SegmentBreakdown: React.FC<SegmentBreakdownProps> = ({
   segmentedResult,
@@ -157,7 +150,7 @@ export const SegmentBreakdown: React.FC<SegmentBreakdownProps> = ({
                 <th className="px-3 sm:px-4 py-2.5">中位耗時</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-850">
+            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
               {sortedSegments.map((seg, idx) => {
                 const diff =
                   seg.result.overallConversionRate - overallResult.overallConversionRate;
@@ -165,12 +158,20 @@ export const SegmentBreakdown: React.FC<SegmentBreakdownProps> = ({
 
                 return (
                   <tr key={idx} className="hover:bg-zinc-50 dark:hover:bg-zinc-950/40">
-                    <td className="px-3 sm:px-4 py-2.5 font-semibold text-zinc-800 dark:text-zinc-200 flex items-center space-x-2">
-                      <div
-                        className="w-2.5 h-2.5 rounded-full shrink-0"
-                        style={{ backgroundColor: SEGMENT_COLORS[idx % SEGMENT_COLORS.length] }}
-                      />
-                      <span className="truncate">{seg.segmentValue}</span>
+                    <td className="px-3 sm:px-4 py-2.5 font-semibold text-zinc-800 dark:text-zinc-200">
+                      <div className="flex items-center space-x-2 min-w-0 max-w-[220px]">
+                        <div
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{
+                            backgroundColor:
+                              SEGMENT_COLORS[
+                                segments.findIndex((s) => s.segmentValue === seg.segmentValue) %
+                                  SEGMENT_COLORS.length
+                              ],
+                          }}
+                        />
+                        <span className="truncate" title={seg.segmentValue}>{seg.segmentValue}</span>
+                      </div>
                     </td>
                     <td className="px-3 sm:px-4 py-2.5 text-zinc-600 dark:text-zinc-300 font-mono">
                       {seg.result.stepResults[0]?.userCount.toLocaleString() || 0}

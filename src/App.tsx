@@ -293,6 +293,8 @@ export function App() {
 
       {/* Cohort Inspection Modal */}
       <DropOffModal
+        key={`${inspectModalState.isOpen}-${inspectModalState.step?.stepId ?? ''}-${inspectModalState.type}`}
+        onCohortSaved={refreshIndexedDB}
         isOpen={inspectModalState.isOpen}
         onClose={() => setInspectModalState({ ...inspectModalState, isOpen: false })}
         step={inspectModalState.step}
@@ -303,6 +305,7 @@ export function App() {
 
       {/* Saved Funnels IndexedDB Modal */}
       <SavedFunnelsModal
+        key={isSavedFunnelsModalOpen ? 'open' : 'closed'}
         isOpen={isSavedFunnelsModalOpen}
         onClose={() => setIsSavedFunnelsModalOpen(false)}
         savedFunnels={savedFunnels}

@@ -3,6 +3,7 @@ import ReactECharts from 'echarts-for-react';
 import { FunnelResult } from '../../types/funnel';
 import { formatDuration, formatPercentage } from '../../utils/time';
 import { useTheme } from '../../context/useTheme';
+import { escapeHtml } from '../../utils/html';
 
 interface EChartsFunnelProps {
   funnel: FunnelResult;
@@ -50,11 +51,11 @@ export const EChartsFunnel: React.FC<EChartsFunnelProps> = ({ funnel, onSelectSt
         return `
           <div style="font-family: ui-sans-serif, system-ui, sans-serif; line-height: 1.5; min-width: 180px;">
             <div style="font-weight: 700; color: ${tooltipText}; border-bottom: 1px solid ${borderColor}; padding-bottom: 4px; margin-bottom: 6px;">
-              步驟 ${idx + 1}：${s.stepName}
+              步驟 ${idx + 1}：${escapeHtml(s.stepName)}
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
               <span style="color: ${textColor};">目標事件:</span>
-              <span style="font-family: monospace; color: #0284c7;">${s.eventName}</span>
+              <span style="font-family: monospace; color: #0284c7;">${escapeHtml(s.eventName)}</span>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
               <span style="color: ${textColor};">獨立使用者:</span>

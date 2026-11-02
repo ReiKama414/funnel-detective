@@ -109,7 +109,7 @@ export const Header: React.FC<HeaderProps> = ({
                 data-testid="theme-toggle-btn"
               >
                 <CurrentThemeIcon className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300" />
-                <span className="text-[11px]">
+                <span className="text-[11px] hidden lg:inline">
                   {theme === 'system' ? '系統跟隨' : theme === 'light' ? '淺色模式' : '深色模式'}
                 </span>
                 <ChevronDown className="w-3 h-3 text-zinc-400" />
@@ -287,6 +287,7 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
               className="p-1.5 rounded bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 transition"
               title="切換主題"
+              aria-label="切換主題"
               data-testid="theme-toggle-btn-mobile"
             >
               {resolvedTheme === 'dark' ? (
@@ -301,6 +302,8 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-1.5 rounded bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 transition"
               title="功能導覽選單"
+              aria-label="功能導覽選單"
+              aria-expanded={mobileMenuOpen}
               data-testid="mobile-menu-btn"
             >
               {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
@@ -340,7 +343,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Mobile Navigation Drawer / Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-zinc-200 dark:border-zinc-800 py-3 space-y-3 animate-in fade-in duration-150">
+          <div className="md:hidden border-t border-zinc-200 dark:border-zinc-800 py-3 space-y-3 animate-in max-h-[calc(100dvh-3.5rem)] overflow-y-auto">
             {/* Mobile Nav Tabs */}
             <div className="grid grid-cols-2 gap-1.5">
               {navItems.map((tab) => (
@@ -413,7 +416,7 @@ export const Header: React.FC<HeaderProps> = ({
                         : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300'
                     }`}
                   >
-                    {ds.name.split(' ')[0]}
+                    {ds.name.split(' (')[0]}
                   </button>
                 ))}
               </div>

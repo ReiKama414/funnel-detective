@@ -8,6 +8,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  base: './',
   build: {
     chunkSizeWarningLimit: 2000,
   },

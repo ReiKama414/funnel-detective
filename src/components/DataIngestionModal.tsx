@@ -10,6 +10,7 @@ import {
 import { ColumnMapping, RawEvent } from '../types/funnel';
 import { parseCSV, parseJSON, ParseResult } from '../utils/dataParser';
 import { saveDataset } from '../services/db';
+import { useEscapeKey } from '../utils/useEscapeKey';
 
 interface DataIngestionModalProps {
   isOpen: boolean;
@@ -33,13 +34,34 @@ export const DataIngestionModal: React.FC<DataIngestionModalProps> = ({
   });
   const [fileType, setFileType] = useState<'csv' | 'json'>('csv');
   const [saveToIndexedDB, setSaveToIndexedDB] = useState<boolean>(true);
+  // Raw content of the most recently loaded file / pasted text, used for re-mapping columns
+  const [sourceText, setSourceText] = useState<string>('');
+  const [isDragging, setIsDragging] = useState(false);
+
+  const resetState = () => {
+    setActiveMode('upload');
+    setFileName('');
+    setRawText('');
+    setSourceText('');
+    setParseResult(null);
+    setIsDragging(false);
+    setColumnMapping({
+      userIdField: 'user_id',
+      eventNameField: 'event_name',
+      timestampField: 'timestamp',
+    });
+  };
+
+  const handleClose = () => {
+    resetState();
+    onClose();
+  };
+
+  useEscapeKey(isOpen, handleClose);
 
   if (!isOpen) return null;
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const processFile = (file: File) => {
     if (file.size === 0) {
       setParseResult({
         events: [],
@@ -58,12 +80,27 @@ export const DataIngestionModal: React.FC<DataIngestionModalProps> = ({
     }
 
     setFileName(file.name);
-    const isJson = file.name.endsWith('.json');
+    const isJson = file.name.toLowerCase().endsWith('.json');
     setFileType(isJson ? 'json' : 'csv');
 
     const reader = new FileReader();
+    reader.onerror = () => {
+      setParseResult({
+        events: [],
+        errors: ['讀取檔案失敗，請確認檔案是否可存取後重試。'],
+        anomalies: [],
+        totalRows: 0,
+        validRows: 0,
+        invalidRows: 0,
+        detectedMapping: columnMapping,
+        availableColumns: [],
+        uniqueEventNames: [],
+        uniqueUsersCount: 0,
+      });
+    };
     reader.onload = (event) => {
       const content = event.target?.result as string;
+      setSourceText(content || '');
       if (!content || !content.trim()) {
         setParseResult({
           events: [],
@@ -87,6 +124,21 @@ export const DataIngestionModal: React.FC<DataIngestionModalProps> = ({
     reader.readAsText(file);
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    processFile(file);
+    // Allow re-selecting the same file afterwards
+    e.target.value = '';
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) processFile(file);
+  };
+
   const handlePasteParse = () => {
     if (!rawText.trim()) {
       setParseResult({
@@ -106,6 +158,7 @@ export const DataIngestionModal: React.FC<DataIngestionModalProps> = ({
     const isJson = rawText.trim().startsWith('[') || rawText.trim().startsWith('{');
     setFileType(isJson ? 'json' : 'csv');
     setFileName(isJson ? 'pasted_data.json' : 'pasted_data.csv');
+    setSourceText(rawText);
 
     const result = isJson ? parseJSON(rawText) : parseCSV(rawText);
     setParseResult(result);
@@ -116,8 +169,9 @@ export const DataIngestionModal: React.FC<DataIngestionModalProps> = ({
     const updated = { ...columnMapping, [key]: value };
     setColumnMapping(updated);
 
-    if (parseResult && rawText) {
-      const reParsed = fileType === 'json' ? parseJSON(rawText, updated) : parseCSV(rawText, updated);
+    if (parseResult && sourceText) {
+      const reParsed =
+        fileType === 'json' ? parseJSON(sourceText, updated) : parseCSV(sourceText, updated);
       setParseResult(reParsed);
     }
   };
@@ -143,7 +197,7 @@ export const DataIngestionModal: React.FC<DataIngestionModalProps> = ({
     }
 
     onImportSuccess(parseResult.events, finalName);
-    onClose();
+    handleClose();
   };
 
   return (
@@ -163,7 +217,8 @@ export const DataIngestionModal: React.FC<DataIngestionModalProps> = ({
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
+            aria-label="Close dialog"
             className="p-1 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition shrink-0"
           >
             <X className="w-4 h-4" />
@@ -197,7 +252,19 @@ export const DataIngestionModal: React.FC<DataIngestionModalProps> = ({
           </div>
 
           {activeMode === 'upload' ? (
-            <label className="border border-dashed border-zinc-300 dark:border-zinc-700 hover:border-zinc-500 rounded-lg p-6 sm:p-7 flex flex-col items-center justify-center cursor-pointer bg-zinc-50 dark:bg-zinc-950/40 hover:bg-zinc-100 dark:hover:bg-zinc-800/20 transition group">
+            <label
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragging(true);
+              }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+              className={`border border-dashed rounded-lg p-6 sm:p-7 flex flex-col items-center justify-center cursor-pointer hover:border-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800/20 transition group ${
+                isDragging
+                  ? 'border-zinc-500 bg-zinc-100 dark:bg-zinc-800/40'
+                  : 'border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950/40'
+              }`}
+            >
               <Upload className="w-6 h-6 sm:w-7 sm:h-7 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition mb-2" />
               <span className="text-xs font-medium text-zinc-800 dark:text-zinc-200 text-center">
                 點擊選擇檔案或拖曳 CSV / JSON 檔案至此
@@ -363,7 +430,7 @@ export const DataIngestionModal: React.FC<DataIngestionModalProps> = ({
         {/* Modal Footer */}
         <div className="px-4 sm:px-6 py-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50 dark:bg-zinc-950/40">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="px-3 py-1 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition"
           >
             取消

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  AlertTriangle,
   X,
   Save,
   FolderOpen,
@@ -10,6 +11,7 @@ import {
 import { StoredFunnelConfig, StoredCohort } from '../services/db';
 import { FunnelConfig, RawEvent } from '../types/funnel';
 import { exportUserCohortCSV } from '../utils/export';
+import { useEscapeKey } from '../utils/useEscapeKey';
 
 interface SavedFunnelsModalProps {
   isOpen: boolean;
@@ -41,7 +43,20 @@ export const SavedFunnelsModal: React.FC<SavedFunnelsModalProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  useEscapeKey(isOpen, onClose);
+
+  useEffect(() => {
+    if (!successMessage) return;
+    const timer = setTimeout(() => setSuccessMessage(null), 3000);
+    return () => clearTimeout(timer);
+  }, [successMessage]);
+
   if (!isOpen) return null;
+
+  const currentEventNames = new Set(allEvents.map((e) => e.eventName.trim().toLowerCase()));
+  const hasMissingEvents = (cfg: FunnelConfig) =>
+    allEvents.length > 0 &&
+    cfg.steps.some((s) => !currentEventNames.has(s.eventName.trim().toLowerCase()));
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +65,6 @@ export const SavedFunnelsModal: React.FC<SavedFunnelsModalProps> = ({
     try {
       await onSaveCurrentFunnel(funnelNameInput.trim());
       setSuccessMessage('已成功持久化至 IndexedDB');
-      setTimeout(() => setSuccessMessage(null), 3000);
     } finally {
       setIsSaving(false);
     }
@@ -71,6 +85,7 @@ export const SavedFunnelsModal: React.FC<SavedFunnelsModalProps> = ({
           </div>
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="p-1 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
           >
             <X className="w-4 h-4" />
@@ -151,13 +166,19 @@ export const SavedFunnelsModal: React.FC<SavedFunnelsModalProps> = ({
                       >
                         <div className="space-y-0.5 min-w-0">
                           <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-200 truncate m-0">{sf.name}</h4>
-                          <div className="flex items-center space-x-2 text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">
+                          <div className="flex flex-wrap items-center gap-x-2 text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">
                             <span>{sf.config.steps.length} 步</span>
                             <span>•</span>
                             <span>{sf.config.conversionWindow.value} {sf.config.conversionWindow.unit}</span>
                             <span>•</span>
                             <span>{new Date(sf.updatedAt).toLocaleDateString()}</span>
                           </div>
+                          {hasMissingEvents(sf.config) && (
+                            <p className="flex items-center space-x-1 text-[11px] text-amber-600 dark:text-amber-400 m-0">
+                              <AlertTriangle className="w-3 h-3 shrink-0" />
+                              <span>含目前資料集中不存在的事件，載入後步驟可能無資料</span>
+                            </p>
+                          )}
                         </div>
 
                         <div className="flex items-center space-x-1.5 shrink-0">
@@ -212,7 +233,7 @@ export const SavedFunnelsModal: React.FC<SavedFunnelsModalProps> = ({
                             {sc.type === 'dropped' ? '流失群' : '留存群'}
                           </span>
                         </div>
-                        <div className="flex items-center space-x-2 text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">
+                        <div className="flex flex-wrap items-center gap-x-2 text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">
                           <span>{sc.userIds.length} 人</span>
                           <span>•</span>
                           <span className="truncate">{sc.stepName}</span>

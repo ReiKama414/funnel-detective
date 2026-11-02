@@ -313,7 +313,8 @@ export function calculateFunnel(events: RawEvent[], config: FunnelConfig): Funne
     }
 
     // Check bottleneck
-    if (i > 0 && dropOffRate > maxDropOffRate && prevCount > 0) {
+    // Only flag a bottleneck when someone actually dropped off at this step
+    if (i > 0 && dropOffCount > 0 && dropOffRate > maxDropOffRate && prevCount > 0) {
       maxDropOffRate = dropOffRate;
       bottleneckStepIndex = i;
     }

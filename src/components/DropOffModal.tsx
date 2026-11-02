@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Download, UserX, UserCheck, Search, HardDrive } from 'lucide-react';
 import { RawEvent, StepResult } from '../types/funnel';
 import { exportUserCohortCSV } from '../utils/export';
+import { useEscapeKey } from '../utils/useEscapeKey';
 import { saveCohort } from '../services/db';
 
 interface DropOffModalProps {
@@ -11,6 +12,8 @@ interface DropOffModalProps {
   type: 'dropped' | 'reached';
   allEvents: RawEvent[];
   datasetId?: string;
+  /** Called after a cohort has been persisted so parent lists can refresh */
+  onCohortSaved?: () => void;
 }
 
 export const DropOffModal: React.FC<DropOffModalProps> = ({
@@ -20,9 +23,18 @@ export const DropOffModal: React.FC<DropOffModalProps> = ({
   type,
   allEvents,
   datasetId = 'default',
+  onCohortSaved,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [persistedNotice, setPersistedNotice] = useState(false);
+
+  useEscapeKey(isOpen, onClose);
+
+  useEffect(() => {
+    if (!persistedNotice) return;
+    const timer = setTimeout(() => setPersistedNotice(false), 3000);
+    return () => clearTimeout(timer);
+  }, [persistedNotice]);
 
   if (!isOpen || !step) return null;
 
@@ -54,7 +66,7 @@ export const DropOffModal: React.FC<DropOffModalProps> = ({
         createdAt: Date.now(),
       });
       setPersistedNotice(true);
-      setTimeout(() => setPersistedNotice(false), 3000);
+      onCohortSaved?.();
     } catch {
       // Ignore idb storage errors gracefully
     }
@@ -87,6 +99,7 @@ export const DropOffModal: React.FC<DropOffModalProps> = ({
 
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="p-1 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition shrink-0"
           >
             <X className="w-4 h-4" />
@@ -98,7 +111,7 @@ export const DropOffModal: React.FC<DropOffModalProps> = ({
           {/* Controls: Search + Export Button */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div className="relative flex-1 min-w-0">
-              <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 top-2" />
+              <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
